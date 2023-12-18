@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from helper_functions import feasibility_problem_cvx_np, compute_prod_sinr
-from gpu_acc_se import compute_se, compute_se_np
+from compute_spectral_efficiency import compute_se, compute_se_np
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -42,7 +42,7 @@ def power_opt_maxmin(signal, interference, max_power, prelog_factor, return_SE=F
         SE = compute_se_np(signal, interference, p_best, prelog_factor)
         return SE, p_best
     else:
-        return p_best
+        return None, p_best
 
 
 def power_opt_prod_sinr(signal, interference, max_power, prelog_factor, return_SE=False):
@@ -69,7 +69,7 @@ def power_opt_prod_sinr(signal, interference, max_power, prelog_factor, return_S
         SE = compute_se_np(signal, interference, rhoSolution, prelog_factor)
         return SE, rhoBest
     else:
-        return rhoBest
+        return None, rhoBest
 
 
 def power_opt_sum_rate(signal, interference, max_power, prelog_factor, return_SE=False):
@@ -99,7 +99,7 @@ def power_opt_sum_rate(signal, interference, max_power, prelog_factor, return_SE
         SE = compute_se_np(signal, interference, rhoBest, prelog_factor)
         return SE, rhoBest
     else:
-        return rhoBest
+        return None, rhoBest
 
 
 if __name__ == '__main__':
