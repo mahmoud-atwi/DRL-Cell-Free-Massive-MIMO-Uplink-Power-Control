@@ -44,12 +44,13 @@ model = SAC(
     batch_size=config["batch_size"],
     policy_kwargs=dict(net_arch=config["net_arch"]),
     verbose=1,
+    device="mps",
 )
 
 print(model.policy)
 
 model.learn(config["total_timesteps"], progress_bar=True, )
 
-model.save("SAC_CFmMIMO_SGD[128 256 128]")
+model.save("SAC_CFmMIMO_SGD[MPS]")
 
 del model
