@@ -1,6 +1,7 @@
 import torch
 import torch.optim as optim
-from stable_baselines3 import SAC
+
+from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 
 from env import CFmMIMOEnv
@@ -16,7 +17,7 @@ config = {
     "learning_rate": 5e-4,
     "batch_size": 128,
     "optimizer_class": optim.SGD,
-    "net_arch": [256, 256],
+    "net_arch": [128, 256, 128],
 }
 
 AP_locations = torch.rand(L, dtype=torch.complex64, device=device) * square_length
@@ -29,19 +30,19 @@ env = CFmMIMOEnv(L=L, K=K, tau_p=tau_p, initial_power=initial_power, min_power=m
 # It will check your custom environment and output additional warnings if needed
 check_env(env, warn=True)
 
-model = SAC(
+model = PPO(
     config["policy_type"],
     env,
     learning_rate=config["learning_rate"],
     batch_size=config["batch_size"],
-    policy_kwargs=dict(optimizer_class=config["optimizer_class"], net_arch=config["net_arch"]),
-
+    policy_kwargs=dict(net_arch=config["net_arch"]),
     verbose=1,
 )
 
-print(model.policy.optimizer_class)
+print(model.policy)
+
 model.learn(config["total_timesteps"], progress_bar=True, )
 
-model.save("SAC_CFmMIMO_SGD[256 256]")
+model.save("PPO_CFmMIMO_SGD[128 256 128]")
 
 del model
