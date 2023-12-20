@@ -6,7 +6,7 @@ import torch
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_checker import check_env
 
-from env import CFmMIMOEnv
+from fix_env import CFmMIMOEnv
 from power_optimization import compute_se_np
 from simulation_para import L, K, tau_p, min_power, max_power, initial_power, square_length, decorr, sigma_sf, \
     noise_variance_dbm, delta
