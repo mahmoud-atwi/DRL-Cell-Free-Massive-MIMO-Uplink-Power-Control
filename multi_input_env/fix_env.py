@@ -9,7 +9,7 @@ from simulation_setup import CF_mMIMO_Env
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-class CFmMIMOEnv(gym.Env):
+class FixCFmMIMOEnv(gym.Env):
     """
     Custom Environment for Cell-Free Massive MIMO system that follows the gym interface.
     Observation state is B_K, an aggregated LSF coefficient for each user k.
@@ -17,7 +17,7 @@ class CFmMIMOEnv(gym.Env):
 
     def __init__(self, L, K, tau_p, initial_power, min_power, max_power, APs_positions, UEs_positions, square_length,
                  decorr, sigma_sf, noise_variance_dbm, delta):
-        super(CFmMIMOEnv, self).__init__()
+        super(FixCFmMIMOEnv, self).__init__()
 
         self.L = L
         self.K = K
@@ -44,7 +44,7 @@ class CFmMIMOEnv(gym.Env):
             'power_allocation': spaces.Box(low=np.float32(-1), high=np.float32(1), shape=(K,), dtype=np.float32),
         })
 
-        # Initial state (B_K values)
+        # Initial state
         init_B_k, init_signal_Cf, init_interference_CF, init_power = self.initialize_state()
         self.state = {'B_k': init_B_k, 'power_allocation': init_power}
 
