@@ -17,35 +17,34 @@ class MobCFmMIMOEnv(gym.Env):
     Observation state is B_K, an aggregated LSF coefficient for each user k.
     """
 
-    def __init__(self, L, K, tau_p, initial_power, min_power, max_power, APs_positions, UEs_positions, square_length,
-                 decorr, sigma_sf, noise_variance_dbm, delta, with_mobility):
+    def __init__(self, **kwargs):
         super(MobCFmMIMOEnv, self).__init__()
 
-        self.L = L
-        self.K = K
-        self.tau_p = tau_p
-        self.max_power = max_power
-        self.min_power = min_power
-        self.initial_power = initial_power
+        self.L = kwargs.get('L')
+        self.K = kwargs.get('K')
+        self.tau_p = kwargs.get('tau_p')
+        self.max_power = kwargs.get('max_power')
+        self.min_power = kwargs.get('min_power')
+        self.initial_power = kwargs.get('initial_power')
         self.UEs_power = None
-        self.APs_positions = APs_positions
-        self.UEs_positions = UEs_positions
-        self.square_length = square_length
-        self.decorr = decorr
-        self.sigma_sf = sigma_sf
-        self.noise_variance_dbm = noise_variance_dbm
-        self.delta = delta
-        self.UEs_mobility = with_mobility
+        self.APs_positions = kwargs.get('APs_positions')
+        self.UEs_positions = kwargs.get('UEs_positions')
+        self.square_length = kwargs.get('square_length')
+        self.decorr = kwargs.get('decorr')
+        self.sigma_sf = kwargs.get('sigma_sf')
+        self.noise_variance_dbm = kwargs.get('noise_variance_dbm')
+        self.delta = kwargs.get('delta')
+        self.UEs_mobility = kwargs.get('with_mobility')
 
         # Define action space (continuous UL power levels for each UE) (scaled to -1 to 1)
-        self.action_space = spaces.Box(low=-1, high=1, shape=(K,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-1, high=1, shape=(self.K,), dtype=np.float32)
         # Store the original power range for rescaling
-        self.power_range = (min_power, max_power)
+        self.power_range = (self.min_power, self.max_power)
 
         # Define observation space (B_k values and allocated power)
         self.observation_space = spaces.Dict({
-            'B_k': spaces.Box(low=np.float32(0), high=np.float32(np.inf), shape=(K,), dtype=np.float32),
-            'power_allocation': spaces.Box(low=np.float32(-1), high=np.float32(1), shape=(K,), dtype=np.float32),
+            'B_k': spaces.Box(low=np.float32(0), high=np.float32(np.inf), shape=(self.K,), dtype=np.float32),
+            'power_allocation': spaces.Box(low=np.float32(-1), high=np.float32(1), shape=(self.K,), dtype=np.float32),
         })
 
         # Initial state
