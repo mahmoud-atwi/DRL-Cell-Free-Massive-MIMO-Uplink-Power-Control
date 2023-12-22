@@ -19,3 +19,8 @@ delta = 0.5  # shadow fading decorrelation parameter
 decorr = 100  # decorrelation distance in meters
 antenna_spacing = 0.5  # antenna spacing in wavelengths
 angular_sd_deg = 15  # angular standard deviation in degrees
+# for mobility
+speed_range = [0.5, 5]
+max_pause_time = 5
+time_step = 1
+pause_prob = 0.3
