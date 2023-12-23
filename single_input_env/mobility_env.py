@@ -81,7 +81,9 @@ class MobilityCFmMIMOEnv(gym.Env):
         # Calculate reward
         _reward = self.calculate_reward(_updated_signal, _updated_interference)
 
-        done = False
+        # Check if the episode is done
+        done = True if _reward > 30 else False
+
         truncated = False
 
         # Additional info
@@ -276,15 +278,15 @@ class MobilityCFmMIMOEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    L = 64
-    K = 32
-    square_length = 1000
-    AP_locations = torch.rand(L, dtype=torch.complex64) * square_length
-    UE_initial_locations = torch.rand(K, dtype=torch.complex64) * square_length
-    env = MobilityCFmMIMOEnv(APs_positions=AP_locations, UEs_positions=UE_initial_locations)
-    observation, _ = env.reset()  # Reset the environment
-    done = False
-    while not done:
-        action = env.action_space.sample()  # Sample a random action
-        observation, reward, done, truncated, info = env.step(action)  # Take a step
-        print(f"Obs: {observation}, Reward: {reward}, Done: {done}, Info: {info}")
+    _L = 64
+    _K = 32
+    _square_length = 1000
+    _AP_locations = torch.rand(_L, dtype=torch.complex64) * _square_length
+    _UE_initial_locations = torch.rand(_K, dtype=torch.complex64) * _square_length
+    _env = MobilityCFmMIMOEnv(APs_positions=_AP_locations, UEs_positions=_UE_initial_locations)
+    _observation, _ = _env.reset()  # Reset the environment
+    _done = False
+    while not _done:
+        _action = _env.action_space.sample()  # Sample a random action
+        _observation, _r, _done, _truncated, _information = _env.step(_action)  # Take a step
+        print(f"Obs: {_observation}, Reward: {-r}, Done: {_done}, Info: {_information}")
