@@ -1,8 +1,8 @@
 from math import log10
 
 # Simulation Parameters
-L = 100
-K = 40
+L = 64
+K = 32
 tau_p = 20
 min_power = 0
 max_power = 100
