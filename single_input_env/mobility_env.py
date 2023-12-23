@@ -288,5 +288,5 @@ if __name__ == '__main__':
     _done = False
     while not _done:
         _action = _env.action_space.sample()  # Sample a random action
-        _observation, _r, _done, _truncated, _information = _env.step(_action)  # Take a step
-        print(f"Obs: {_observation}, Reward: {-r}, Done: {_done}, Info: {_information}")
+        _observation, _rew, _done, _truncated, _information = _env.step(_action)  # Take a step
+        print(f"Obs: {_observation}, Reward: {_rew}, Done: {_done}, Info: {_information}")
