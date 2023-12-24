@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from helper_functions import feasibility_problem_cvx_np, compute_prod_sinr
-from compute_spectral_efficiency import compute_se, compute_se_np
+from compute_spectral_efficiency import compute_se_np
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
