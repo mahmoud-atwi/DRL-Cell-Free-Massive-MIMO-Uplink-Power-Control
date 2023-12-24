@@ -1,0 +1,14 @@
+gymnasium~=0.29.1
+numpy~=1.26.2
+torch~=2.1.2
+matplotlib~=3.8.2
+optuna~=3.5.0
+optuna-dashboard~=0.14.0
+gunicorn~=21.2.0
+cvxpy~=1.4.1
+scipy~=1.11.4
+stable-baselines3~=2.2.1
+tqdm~=4.66.1
+rich~=13.7.0
+matplotlib~=3.8.2
+wandb~=0.16.1
