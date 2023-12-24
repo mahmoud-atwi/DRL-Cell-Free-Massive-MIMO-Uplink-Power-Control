@@ -116,4 +116,4 @@ def CF_mMIMO_Env(L, K, tau_p, max_power, UEs_power, APs_positions, UEs_positions
 
     B_k = torch.sum(beta_val, dim=0)
 
-    return B_k, signal_CF, interference_CF, pilot_index_CF, beta_val, APs_positions, UEs_positions
+    return B_k, signal_CF, interference_CF, SE_CF, pilot_index_CF, beta_val, APs_positions, UEs_positions
