@@ -76,13 +76,13 @@ class MobilityCFmMIMOEnv(gym.Env):
             self.UEs_positions = self.update_ue_positions()
 
         # Recalculate B_k based on the new UL power
-        _updated_Beta_k, _updated_signal, _updated_interference = self.update_state()
+        _updated_Beta_k, _updated_signal, _updated_interference, _SE_CF = self.update_state()
 
         # Calculate reward
-        _reward = self.calculate_reward(_updated_signal, _updated_interference)
+        _reward = self.calculate_reward(_updated_signal, _updated_interference, _SE_CF)
 
         # Check if the episode is done
-        done = True if _reward > 30 else False
+        done = True if _reward > 1 else False
 
         truncated = False
 
@@ -128,28 +128,31 @@ class MobilityCFmMIMOEnv(gym.Env):
         """
         Update the Beta_K values based on the given action.
         """
-        _updated_Beta_k, _updated_signal, _updated_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p,
-                                                                                   self.max_power,
-                                                                                   self.UEs_power,
-                                                                                   self.APs_positions,
-                                                                                   self.UEs_positions,
-                                                                                   self.square_length, self.decorr,
-                                                                                   self.sigma_sf,
-                                                                                   self.noise_variance_dbm,
-                                                                                   self.delta)
+        _updated_Beta_k, _updated_signal, _updated_interference, _SE_CF, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p,
+                                                                                           self.max_power,
+                                                                                           self.UEs_power,
+                                                                                           self.APs_positions,
+                                                                                           self.UEs_positions,
+                                                                                           self.square_length,
+                                                                                           self.decorr,
+                                                                                           self.sigma_sf,
+                                                                                           self.noise_variance_dbm,
+                                                                                           self.delta)
 
         _updated_Beta_k_np = _updated_Beta_k.detach().cpu().numpy()
         _update_signal_np = _updated_signal.detach().cpu().numpy()
         _updated_interference_np = _updated_interference.detach().cpu().numpy()
+        _SE_CF_np = _SE_CF.detach().cpu().numpy()
 
-        return _updated_Beta_k_np, _update_signal_np, _updated_interference_np
+        return _updated_Beta_k_np, _update_signal_np, _updated_interference_np, _SE_CF_np
 
-    def calculate_reward(self, signal, interference):
+    def calculate_reward(self, signal, interference, SE):
         """
         Calculate the reward for the given action and state.
         """
-        _SINR = calc_SINR(self.UEs_power, signal, interference)
-        _r = np.sum(np.log2(1 + _SINR))
+        # _SINR = calc_SINR(self.UEs_power, signal, interference)
+        # _r = np.sum(np.log2(1 + _SINR))
+        _r = np.sum(SE)
         return float(_r)
 
     def calculate(self, signal, interference, action, lagging_SE, pilot_index, beta_val):
