@@ -76,7 +76,6 @@ def sqrtm_newton_schulz(matrix, num_iters):
 
 
 def feasibility_problem_cvx_np(signal, interference, max_power, K, sinr_constraint):
-
     rho = cp.Variable(K)
     scaling = cp.Variable()
 
@@ -85,7 +84,8 @@ def feasibility_problem_cvx_np(signal, interference, max_power, K, sinr_constrai
     constraints = []
 
     for k in range(K):
-        constraints.append(sinr_constraint * (cp.sum(cp.multiply(rho, interference[:, k])) + 1) - (rho[k] * signal[k]) <= 0)
+        constraints.append(
+            sinr_constraint * (cp.sum(cp.multiply(rho, interference[:, k])) + 1) - (rho[k] * signal[k]) <= 0)
         constraints.append(rho[k] >= 0)
         constraints.append(rho[k] <= scaling * max_power)
 
