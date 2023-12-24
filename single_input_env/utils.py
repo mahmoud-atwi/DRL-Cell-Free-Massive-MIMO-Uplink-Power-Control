@@ -1,4 +1,9 @@
+import os
+import socket
+import subprocess
 import importlib
+import time
+
 from typing import Any, Dict, List, Type, Optional
 
 import optuna
@@ -18,11 +23,11 @@ def get_class_by_name(name: str) -> Type:
     :return:
     """
 
-    def get_module_name(name: str) -> str:
-        return ".".join(name.split(".")[:-1])
+    def get_module_name(cls_name: str) -> str:
+        return ".".join(cls_name.split(".")[:-1])
 
-    def get_class_name(name: str) -> str:
-        return name.split(".")[-1]
+    def get_class_name(cls_name: str) -> str:
+        return cls_name.split(".")[-1]
 
     module = importlib.import_module(get_module_name(name))
     return getattr(module, get_class_name(name))
@@ -120,3 +125,33 @@ class TrialEvalCallback(EvalCallback):
                 self.is_pruned = True
                 return False
         return True
+
+
+def get_machine_ip():
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except Exception as e:
+        print(f"Error getting public IP: {e}")
+        return "localhost"
+
+
+def launch_optuna_dashboard(script_dir, storage_url, port=80):
+    host = get_machine_ip()
+    os.chdir(script_dir)
+    bash_cmd = f'optuna-dashboard {storage_url} --port {port} --host {host}'
+    process = subprocess.Popen(bash_cmd.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    print(output.decode())
+
+
+def check_and_launch_dashboard(script_dir, storage_url, port, check_interval=5):
+    """
+    Checks for the existence of the SQLite database file and launches the dashboard.
+    """
+    while True:
+        if os.path.exists(storage_url.split("///")[1]):
+            launch_optuna_dashboard(script_dir, storage_url, port)
+            break
+        time.sleep(check_interval)
