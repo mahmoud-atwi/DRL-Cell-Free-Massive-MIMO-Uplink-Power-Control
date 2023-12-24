@@ -1,6 +1,7 @@
 import os
 import pickle as pkl
 import sys
+import threading
 import time
 from pathlib import Path
 from pprint import pprint
@@ -22,7 +23,7 @@ from torch.backends import mps
 from algos import ALGOS
 from hyperparams import HYPERPARAMS_SAMPLER
 from simulation_para import square_length, L, K
-from utils import TrialEvalCallback
+from utils import TrialEvalCallback, check_and_launch_dashboard
 
 if sys.platform == "darwin":  # Check if macOS
     device = "mps" if mps.is_available() else "cpu"
@@ -50,6 +51,9 @@ config = {
     "env_name": 'MobilityCFmMIMOEnv',
     "optimizer_class": optim.SGD,
 }
+
+optuna_study_name = "Mobility_CF-mMIMO"
+storage_url = f"sqlite:///{optuna_study_name}.sqlite3"
 
 register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv", )
 
@@ -124,7 +128,7 @@ def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_e
     learn_kwargs = {}
 
     try:
-        model.learn(n_timesteps, callback=callbacks, progress_bar=True, **learn_kwargs)
+        model.learn(n_timesteps, callback=callbacks, **learn_kwargs)
         model.env.close()
         eval_env.close()
     except (AssertionError, ValueError) as e:
@@ -154,7 +158,6 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
     sampler = create_sampler(sampler_method, seed)
     pruner = create_pruner(pruner_method, n_startup_trials=10, n_evaluations=1)
 
-    storage_url = f"sqlite:///{study_name}.sqlite3"
     study = optuna.create_study(
         storage=storage_url,
         sampler=sampler,
@@ -163,6 +166,12 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
         direction="maximize",
         load_if_exists=True,
     )
+
+    # Start the check-and-launch thread
+
+    dashboard_thread = threading.Thread(target=check_and_launch_dashboard,
+                                        args=(os.path.dirname(os.path.realpath(__file__)), storage_url, 9000))
+    dashboard_thread.start()
 
     try:
         if max_total_trials is not None:
@@ -174,7 +183,7 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
                     lambda _trial: objective(_trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_episodes,
                                              n_timesteps, n_eval_envs, deterministic_eval, optimization_log_path,
                                              verbose, seed=seed, save_path=save_path, no_log=True), n_jobs=1,
-                    callbacks=[MaxTrialsCallback(max_total_trials, states=counted_states), ], )
+                    callbacks=[MaxTrialsCallback(max_total_trials, states=counted_states)], )
         else:
             print(f"Running optimization with a maximum of {n_trials} trials.")
             study.optimize(
@@ -184,6 +193,8 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
 
     except KeyboardInterrupt:
         pass
+    finally:
+        dashboard_thread.join()
 
     print("Number of finished trials: ", len(study.trials))
 
@@ -220,7 +231,7 @@ if __name__ == "__main__":
     _n_envs = 1  # Number of environments
     _n_eval_envs = 1  # Number of evaluation environments
     _n_timesteps = config["total_timesteps"]  # Total timesteps for each trial
-    _n_eval_episodes = 5  # Number of evaluation episodes
+    _n_eval_episodes = 20  # Number of evaluation episodes
     _optimization_log_path = "optuna_logs"  # Directory for optimization logs
     _verbose = 3  # Verbosity level
     _save_path = str(log_directory)  # Directory for saving logs
