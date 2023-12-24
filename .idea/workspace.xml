@@ -4,21 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="remove unused imports">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/helper_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/multi_input_env/SAC_CFmMIMO_Adam(2x256).zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/multi_input_env/compare.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/multi_input_env/hparam_opt.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/power_optimization.py" beforeDir="false" afterPath="$PROJECT_DIR$/power_optimization.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation_para.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_para.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulation_setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_input_env/hparam_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/hparam_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_input_env/hyperparams.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/hyperparams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_input_env/mobility_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/mobility_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_input_env/test1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_input_env/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,7 +169,7 @@
       <workItem from="1703181927649" duration="35488000" />
       <workItem from="1703328522945" duration="12072000" />
       <workItem from="1703357821628" duration="6474000" />
-      <workItem from="1703365755633" duration="5232000" />
+      <workItem from="1703365755633" duration="5836000" />
     </task>
     <task id="LOCAL-00001" summary="add">
       <option name="closed" value="true" />
@@ -454,7 +443,111 @@
       <option name="project" value="LOCAL" />
       <updated>1703324503525</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="update">
+      <option name="closed" value="true" />
+      <created>1703399372903</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399372903</updated>
+    </task>
+    <task id="LOCAL-00036" summary="add functions to launch optuna dashboard">
+      <option name="closed" value="true" />
+      <created>1703399446505</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399446505</updated>
+    </task>
+    <task id="LOCAL-00037" summary="reformat">
+      <option name="closed" value="true" />
+      <created>1703399538753</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399538753</updated>
+    </task>
+    <task id="LOCAL-00038" summary="add">
+      <option name="closed" value="true" />
+      <created>1703399556393</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399556393</updated>
+    </task>
+    <task id="LOCAL-00039" summary="return spectral efficiency">
+      <option name="closed" value="true" />
+      <created>1703399639497</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399639497</updated>
+    </task>
+    <task id="LOCAL-00040" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1703399664251</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399664251</updated>
+    </task>
+    <task id="LOCAL-00041" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1703399677914</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399677914</updated>
+    </task>
+    <task id="LOCAL-00042" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1703399684189</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399684189</updated>
+    </task>
+    <task id="LOCAL-00043" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1703399690519</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399690519</updated>
+    </task>
+    <task id="LOCAL-00044" summary="add optuna dashboard">
+      <option name="closed" value="true" />
+      <created>1703399736678</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399736678</updated>
+    </task>
+    <task id="LOCAL-00045" summary="modify hyperparams options">
+      <option name="closed" value="true" />
+      <created>1703399775548</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399775548</updated>
+    </task>
+    <task id="LOCAL-00046" summary="change reward to sum of spectral efficiency">
+      <option name="closed" value="true" />
+      <created>1703399845487</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399845487</updated>
+    </task>
+    <task id="LOCAL-00047" summary="remove unused imports">
+      <option name="closed" value="true" />
+      <created>1703399879362</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1703399879362</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -474,11 +567,19 @@
     <MESSAGE value="mod" />
     <MESSAGE value="move" />
     <MESSAGE value="add mobility para" />
-    <MESSAGE value="add" />
     <MESSAGE value="add &quot;TrialEvalCallback&quot; Class" />
     <MESSAGE value="re-write and add suport for apple MPS" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="add functions to launch optuna dashboard" />
+    <MESSAGE value="reformat" />
+    <MESSAGE value="add" />
+    <MESSAGE value="return spectral efficiency" />
+    <MESSAGE value="deleted" />
+    <MESSAGE value="add optuna dashboard" />
+    <MESSAGE value="modify hyperparams options" />
+    <MESSAGE value="change reward to sum of spectral efficiency" />
+    <MESSAGE value="remove unused imports" />
+    <option name="LAST_COMMIT_MESSAGE" value="remove unused imports" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
