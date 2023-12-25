@@ -7,6 +7,7 @@ tau_p = 20
 min_power = 0
 max_power = 100
 initial_power = 100
+prelog_factor = 1
 
 # Three-Slope Simulation Parameters
 square_length = 1000  # meters
