@@ -36,6 +36,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         self.noise_variance_dbm = kwargs.get('noise_variance_dbm', -92)
         self.delta = kwargs.get('delta', 0.5)
         self.UEs_mobility = kwargs.get('UEs_mobility', False)
+        self.relocate_AP_on_reset = kwargs.get('relocate_AP_on_reset', False)
 
         # Define action space (continuous UL power levels for each UE)
         self.action_space = spaces.Box(low=-1, high=1, shape=(self.K,), dtype=np.float32)
@@ -100,7 +101,8 @@ class MobilityCFmMIMOEnv(gym.Env):
         return _updated_Beta_k, _reward, done, truncated, _info
 
     def initialize_state(self):
-
+        if self.relocate_AP_on_reset:
+            self.APs_positions = torch.rand(self.L, dtype=torch.complex64, device=device) * self.square_length
         _UE_init_locations = torch.rand(self.K, dtype=torch.complex64, device=device) * self.square_length
 
         _init_B_k, _init_signal, _init_interference, _init_SE, _init_pilot_index, _init_beta_val, *_ = (

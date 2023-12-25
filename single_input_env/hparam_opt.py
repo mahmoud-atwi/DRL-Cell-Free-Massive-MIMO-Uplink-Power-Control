@@ -47,7 +47,7 @@ config = {
     "algo": "SAC",
     "policy_type": "MlpPolicy",
     "total_timesteps": 10000,
-    "max_episode_steps": 100,
+    "max_episode_steps": 20,
     "env_id": "CFmMIMOEnv/Mobility-v0",
     "env_name": 'MobilityCFmMIMOEnv',
     "optimizer_class": optim.SGD,
@@ -61,7 +61,8 @@ register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv",
 
 # register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv", )
 
-environment_kwargs = {"APs_positions": AP_locations, "UEs_positions": UE_initial_locations, "UEs_mobility": True}
+environment_kwargs = {"APs_positions": AP_locations, "UEs_positions": UE_initial_locations, "UEs_mobility": True,
+                      "relocate_AP_on_reset": True}
 
 _hyperparams = dict()
 
@@ -159,7 +160,7 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
                                  env_id, env_kwargs, eval_env_kwargs, n_timesteps, n_evaluations, n_trials, n_envs,
                                  n_eval_envs, deterministic_eval,
                                  optimization_log_path, verbose, n_eval_episodes, save_path):
-    seed = 0  # Define the seed if required
+    seed = 0
     sampler = create_sampler(sampler_method, seed)
     pruner = create_pruner(pruner_method, n_startup_trials=10, n_evaluations=n_evaluations)
 
@@ -233,13 +234,13 @@ if __name__ == "__main__":
     _study_name = "Mobility_CF-mMIMO"
     _sampler_method = "tpe"  # Options: "random", "tpe", "skopt"
     _pruner_method = "median"  # Options: "halving", "median", "none"
-    _max_total_trials = 10  # Maximum number of trials
+    _max_total_trials = 100  # Maximum number of trials
     _n_trials = 50  # Number of trials if max_total_trials is None
     _n_envs = 1  # Number of environments
     _n_eval_envs = 1  # Number of evaluation environments
     _n_timesteps = config["total_timesteps"]  # Total timesteps for each trial
     _n_evaluations = config["total_timesteps"] // 100  # Number of evaluations for pruning
-    _n_eval_episodes = 10  # Number of evaluation episodes
+    _n_eval_episodes = 20  # Number of evaluation episodes
     _optimization_log_path = "optuna_logs"  # Directory for optimization logs
     _verbose = 3  # Verbosity level
     _save_path = str(log_directory)  # Directory for saving logs
