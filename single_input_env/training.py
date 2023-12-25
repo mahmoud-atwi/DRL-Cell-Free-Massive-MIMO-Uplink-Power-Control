@@ -5,7 +5,7 @@ from pathlib import Path
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_checker import check_env
 
-from env import CFmMIMOEnv
+from mobility_env import MobilityCFmMIMOEnv as CFmMIMOEnv
 from simulation_para import L, K, tau_p, min_power, max_power, initial_power, square_length, decorr, sigma_sf, \
     noise_variance_dbm, delta
 
@@ -21,18 +21,20 @@ config = {
     "policy_type": "MlpPolicy",
     "total_timesteps": 20000,
     "env_name": "CFmMIMOEnv",
-    "learning_rate": 5e-4,
-    "batch_size": 128,
+    "gamma": 0.9,
+    "learning_rate": 0.00065,
+    "batch_size": 64,
+    "tau": 0.02,
+    "log_std_init": 0.7187,
+    "buffer_size": 10000,
     "optimizer_class": optim.SGD,
-    "net_arch": [128, 256, 128],
+    "net_arch": [400, 300],
 }
 
 AP_locations = torch.rand(L, dtype=torch.complex64, device=device) * square_length
 UE_initial_locations = torch.rand(K, dtype=torch.complex64, device=device) * square_length
 
-env = CFmMIMOEnv(L=L, K=K, tau_p=tau_p, initial_power=initial_power, min_power=min_power, max_power=max_power,
-                 APs_positions=AP_locations, UEs_positions=UE_initial_locations, square_length=square_length,
-                 decorr=decorr, sigma_sf=sigma_sf, noise_variance_dbm=noise_variance_dbm, delta=delta)
+env = CFmMIMOEnv(APs_positions=AP_locations, UEs_positions=UE_initial_locations, UEs_mobility=True,)
 
 # It will check your custom environment and output additional warnings if needed
 check_env(env, warn=True)
@@ -42,7 +44,10 @@ model = SAC(
     env,
     learning_rate=config["learning_rate"],
     batch_size=config["batch_size"],
-    policy_kwargs=dict(net_arch=config["net_arch"]),
+    gamma=config["gamma"],
+    tau=config["tau"],
+    buffer_size=config["buffer_size"],
+    policy_kwargs=dict(net_arch=config["net_arch"], log_std_init=config["log_std_init"],),
     verbose=1,
     device="mps",
 )
