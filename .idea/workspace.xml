@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="move">
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="fix optuna_eval_freq wrong calculation">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_input_env/hparam_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/hparam_opt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_input_env/mobility_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_input_env/mobility_env.py" afterDir="false" />
     </list>
@@ -73,9 +74,9 @@
       <recent name="$PROJECT_DIR$/Single Input Env" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/single_input_env/optuna_db" />
       <recent name="$PROJECT_DIR$/single_input_env/models/SAC/20231225" />
       <recent name="$PROJECT_DIR$/single_input_env/models/SAC" />
-      <recent name="$PROJECT_DIR$/single_input_env/optuna_db" />
       <recent name="$PROJECT_DIR$/single_input_env" />
       <recent name="$PROJECT_DIR$/single_input_env/models" />
     </key>
@@ -249,31 +250,7 @@
       <workItem from="1703181927649" duration="35488000" />
       <workItem from="1703328522945" duration="12072000" />
       <workItem from="1703357821628" duration="6474000" />
-      <workItem from="1703365755633" duration="43562000" />
-    </task>
-    <task id="LOCAL-00011" summary="renamed">
-      <option name="closed" value="true" />
-      <created>1703059404927</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1703059404927</updated>
-    </task>
-    <task id="LOCAL-00012" summary="added">
-      <option name="closed" value="true" />
-      <created>1703059424311</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1703059424311</updated>
-    </task>
-    <task id="LOCAL-00013" summary="change to torch">
-      <option name="closed" value="true" />
-      <created>1703059470479</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1703059470479</updated>
+      <workItem from="1703365755633" duration="49901000" />
     </task>
     <task id="LOCAL-00014" summary="update">
       <option name="closed" value="true" />
@@ -643,15 +620,37 @@
       <option name="project" value="LOCAL" />
       <updated>1703530573836</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="fix SE return issue in initialize_state method">
+      <option name="closed" value="true" />
+      <created>1703530675244</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1703530675244</updated>
+    </task>
+    <task id="LOCAL-00061" summary="fix optuna_eval_freq wrong calculation">
+      <option name="closed" value="true" />
+      <created>1703530717396</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1703530717396</updated>
+    </task>
+    <task id="LOCAL-00062" summary="fix optuna_eval_freq wrong calculation">
+      <option name="closed" value="true" />
+      <created>1703530725418</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1703530725418</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add power optimization algorithms as methods" />
-    <MESSAGE value="file renamed" />
     <MESSAGE value="delete" />
     <MESSAGE value="renamed" />
     <MESSAGE value="added" />
@@ -675,7 +674,9 @@
     <MESSAGE value="add max_episode_steps during env registration" />
     <MESSAGE value="update" />
     <MESSAGE value="move" />
-    <option name="LAST_COMMIT_MESSAGE" value="move" />
+    <MESSAGE value="fix SE return issue in initialize_state method" />
+    <MESSAGE value="fix optuna_eval_freq wrong calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix optuna_eval_freq wrong calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -701,6 +702,6 @@
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hparam_opt__1_.coverage" NAME="hparam_opt (1) Coverage Results" MODIFIED="1703365444038" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1702933017085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$random_waypoint.coverage" NAME="random_waypoint Coverage Results" MODIFIED="1703010873941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hparam_opt.coverage" NAME="hparam_opt Coverage Results" MODIFIED="1703530346040" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
+    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hparam_opt.coverage" NAME="hparam_opt Coverage Results" MODIFIED="1703538282361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
   </component>
 </project>
