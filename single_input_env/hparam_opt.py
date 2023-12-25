@@ -46,7 +46,8 @@ UE_initial_locations = torch.rand(K, dtype=torch.complex64, device=_device) * sq
 config = {
     "algo": "SAC",
     "policy_type": "MlpPolicy",
-    "total_timesteps": 10000,
+    "total_timesteps": 1000,
+    "max_episode_steps": 10,
     "env_id": "CFmMIMOEnv/Mobility-v0",
     "env_name": 'MobilityCFmMIMOEnv',
     "optimizer_class": optim.SGD,
@@ -55,7 +56,8 @@ config = {
 optuna_study_name = "Mobility_CF-mMIMO"
 storage_url = f"sqlite:///{optuna_study_name}.sqlite3"
 
-register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv", )
+register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv",
+         max_episode_steps=config["max_episode_steps"], )
 
 environment_kwargs = {"APs_positions": AP_locations, "UEs_positions": UE_initial_locations, "UEs_mobility": True}
 
@@ -151,7 +153,8 @@ def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_e
     return reward
 
 
-def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_total_trials, algo, env_id, env_kwargs,
+def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_total_trials, algo,
+                                 env_id, env_kwargs,
                                  eval_env_kwargs, n_timesteps, n_trials, n_envs, n_eval_envs, deterministic_eval,
                                  optimization_log_path, verbose, n_eval_episodes, save_path):
     seed = 0  # Define the seed if required
