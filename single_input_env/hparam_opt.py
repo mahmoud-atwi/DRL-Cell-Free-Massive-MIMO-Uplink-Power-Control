@@ -46,8 +46,8 @@ UE_initial_locations = torch.rand(K, dtype=torch.complex64, device=_device) * sq
 config = {
     "algo": "SAC",
     "policy_type": "MlpPolicy",
-    "total_timesteps": 1000,
-    "max_episode_steps": 10,
+    "total_timesteps": 10000,
+    "max_episode_steps": 100,
     "env_id": "CFmMIMOEnv/Mobility-v0",
     "env_name": 'MobilityCFmMIMOEnv',
     "optimizer_class": optim.SGD,
@@ -58,6 +58,8 @@ storage_url = f"sqlite:///{optuna_study_name}.sqlite3"
 
 register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv",
          max_episode_steps=config["max_episode_steps"], )
+
+# register(id=config["env_id"], entry_point="mobility_env:MobilityCFmMIMOEnv", )
 
 environment_kwargs = {"APs_positions": AP_locations, "UEs_positions": UE_initial_locations, "UEs_mobility": True}
 
@@ -105,8 +107,8 @@ def create_envs(env_id: str, n_envs: int, env_kwargs: dict, eval_env_kwargs: dic
     return env
 
 
-def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_episodes, n_timesteps, n_eval_envs,
-              deterministic_eval, optimization_log_path, verbose, seed, save_path, no_log):
+def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_episodes, n_timesteps, n_evaluations,
+              n_eval_envs, deterministic_eval, optimization_log_path, verbose, seed, save_path, no_log):
     kwargs = dict()
     sampled_hyperparams = HYPERPARAMS_SAMPLER[algo](trial)
     kwargs.update(sampled_hyperparams)
@@ -120,8 +122,10 @@ def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_e
 
     eval_env = create_envs(env_id, n_envs=n_eval_envs, env_kwargs=env_kwargs, eval_env_kwargs=eval_env_kwargs,
                            vec_env_class=DummyVecEnv, seed=seed, save_path=save_path, eval_env=True)
-    optuna_eval_freq = max(int(n_timesteps / n_eval_episodes) // n_envs, 1)
-
+    optuna_eval_freq = max(int(n_timesteps / n_evaluations) // n_envs, 1)
+    # optuna_eval_freq = 5
+    print(f'n_eval_episodes: {n_eval_episodes}')
+    print(f'optuna_eval_freq: {optuna_eval_freq}')
     path = os.path.join(optimization_log_path, f"trial_{trial.number}") if optimization_log_path else None
     callbacks = [
         TrialEvalCallback(eval_env, trial, best_model_save_path=path, log_path=path, n_eval_episodes=n_eval_episodes,
@@ -136,8 +140,6 @@ def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_e
     except (AssertionError, ValueError) as e:
         model.env.close()
         eval_env.close()
-        print(e)
-        print("Sampled hyperparams:")
         pprint(sampled_hyperparams)
         raise optuna.exceptions.TrialPruned() from e
 
@@ -154,12 +156,12 @@ def objective(trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_e
 
 
 def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_total_trials, algo,
-                                 env_id, env_kwargs,
-                                 eval_env_kwargs, n_timesteps, n_trials, n_envs, n_eval_envs, deterministic_eval,
+                                 env_id, env_kwargs, eval_env_kwargs, n_timesteps, n_evaluations, n_trials, n_envs,
+                                 n_eval_envs, deterministic_eval,
                                  optimization_log_path, verbose, n_eval_episodes, save_path):
     seed = 0  # Define the seed if required
     sampler = create_sampler(sampler_method, seed)
-    pruner = create_pruner(pruner_method, n_startup_trials=10, n_evaluations=1)
+    pruner = create_pruner(pruner_method, n_startup_trials=10, n_evaluations=n_evaluations)
 
     study = optuna.create_study(
         storage=storage_url,
@@ -184,14 +186,16 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
             if completed_trials < max_total_trials:
                 study.optimize(
                     lambda _trial: objective(_trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_episodes,
-                                             n_timesteps, n_eval_envs, deterministic_eval, optimization_log_path,
+                                             n_timesteps, n_evaluations, n_eval_envs, deterministic_eval,
+                                             optimization_log_path,
                                              verbose, seed=seed, save_path=save_path, no_log=True), n_jobs=1,
                     callbacks=[MaxTrialsCallback(max_total_trials, states=counted_states)], )
         else:
             print(f"Running optimization with a maximum of {n_trials} trials.")
             study.optimize(
                 lambda _trial: objective(_trial, algo, env_id, n_envs, env_kwargs, eval_env_kwargs, n_eval_episodes,
-                                         n_timesteps, n_eval_envs, deterministic_eval, optimization_log_path, verbose,
+                                         n_timesteps, n_evaluations, n_eval_envs, deterministic_eval,
+                                         optimization_log_path, verbose,
                                          seed=seed, save_path=save_path, no_log=True), n_jobs=1, n_trials=n_trials, )
 
     except KeyboardInterrupt:
@@ -229,12 +233,13 @@ if __name__ == "__main__":
     _study_name = "Mobility_CF-mMIMO"
     _sampler_method = "tpe"  # Options: "random", "tpe", "skopt"
     _pruner_method = "median"  # Options: "halving", "median", "none"
-    _max_total_trials = 100  # Maximum number of trials
+    _max_total_trials = 10  # Maximum number of trials
     _n_trials = 50  # Number of trials if max_total_trials is None
     _n_envs = 1  # Number of environments
     _n_eval_envs = 1  # Number of evaluation environments
     _n_timesteps = config["total_timesteps"]  # Total timesteps for each trial
-    _n_eval_episodes = 20  # Number of evaluation episodes
+    _n_evaluations = config["total_timesteps"] // 100  # Number of evaluations for pruning
+    _n_eval_episodes = 10  # Number of evaluation episodes
     _optimization_log_path = "optuna_logs"  # Directory for optimization logs
     _verbose = 3  # Verbosity level
     _save_path = str(log_directory)  # Directory for saving logs
@@ -250,6 +255,7 @@ if __name__ == "__main__":
         env_kwargs=environment_kwargs,
         eval_env_kwargs=environment_kwargs,
         n_timesteps=_n_timesteps,
+        n_evaluations=_n_evaluations,
         n_trials=_n_trials,
         n_envs=_n_envs,
         n_eval_envs=_n_eval_envs,
