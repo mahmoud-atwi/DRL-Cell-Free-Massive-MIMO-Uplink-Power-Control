@@ -5,7 +5,6 @@ from gymnasium import spaces
 
 import simulation_para as sim_para
 from compute_spectral_efficiency import compute_se_np
-from helper_functions import calc_SINR
 from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
 from random_waypoint import random_waypoint
 from simulation_setup import CF_mMIMO_Env
@@ -53,16 +52,17 @@ class MobilityCFmMIMOEnv(gym.Env):
         Reset the state of the environment to an initial state
         """
         # Initialize/reset the state (B_K values)
-        self.state, _init_signal, _init_interference, _init_pilot_index, _init_beta_val = self.initialize_state()
+        self.state, _init_signal, _init_interference, _init_SE, _init_pilot_index, _init_beta_val = (
+            self.initialize_state())
 
-        info = dict()
+        _info = dict()
 
-        info['init_signal'] = _init_signal
-        info['init_interference'] = _init_interference
-        info['init_pilot_index'] = _init_pilot_index
-        info['init_beta_val'] = _init_beta_val
+        _info['init_signal'] = _init_signal
+        _info['init_interference'] = _init_interference
+        _info['init_pilot_index'] = _init_pilot_index
+        _info['init_beta_val'] = _init_beta_val
 
-        return self.state, info
+        return self.state, _info
 
     def step(self, action):
         """
@@ -103,27 +103,20 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         _UE_init_locations = torch.rand(self.K, dtype=torch.complex64, device=device) * self.square_length
 
-        _init_B_k, _init_signal, _init_interference, _init_pilot_index, _init_beta_val, *_ = (
-            CF_mMIMO_Env(self.L,
-                         self.K,
-                         self.tau_p,
-                         self.max_power,
-                         self.initial_power,
-                         self.APs_positions,
-                         _UE_init_locations,
-                         self.square_length,
-                         self.decorr,
-                         self.sigma_sf,
-                         self.noise_variance_dbm,
+        _init_B_k, _init_signal, _init_interference, _init_SE, _init_pilot_index, _init_beta_val, *_ = (
+            CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power, self.initial_power, self.APs_positions,
+                         _UE_init_locations, self.square_length, self.decorr, self.sigma_sf, self.noise_variance_dbm,
                          self.delta))
 
         _init_Beta_k_np = _init_B_k.detach().cpu().numpy()
         _init_signal_np = _init_signal.detach().cpu().numpy()
         _init_interference_np = _init_interference.detach().cpu().numpy()
+        _init_SE_np = _init_SE.detach().cpu().numpy()
         _init_pilot_index_np = _init_pilot_index.detach().cpu().numpy()
         _init_beta_val_np = _init_beta_val.detach().cpu().numpy()
 
-        return _init_Beta_k_np, _init_signal_np, _init_interference_np, _init_pilot_index_np, _init_beta_val_np
+        return (_init_Beta_k_np, _init_signal_np, _init_interference_np, _init_SE_np, _init_pilot_index_np,
+                _init_beta_val_np)
 
     def update_state(self):
         """
@@ -135,8 +128,7 @@ class MobilityCFmMIMOEnv(gym.Env):
                                                                                            self.APs_positions,
                                                                                            self.UEs_positions,
                                                                                            self.square_length,
-                                                                                           self.decorr,
-                                                                                           self.sigma_sf,
+                                                                                           self.decorr, self.sigma_sf,
                                                                                            self.noise_variance_dbm,
                                                                                            self.delta)
 
