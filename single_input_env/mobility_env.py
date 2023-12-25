@@ -4,6 +4,7 @@ import torch
 from gymnasium import spaces
 
 import simulation_para as sim_para
+from compute_spectral_efficiency import compute_se_np
 from helper_functions import calc_SINR
 from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
 from random_waypoint import random_waypoint
@@ -82,8 +83,8 @@ class MobilityCFmMIMOEnv(gym.Env):
         _reward = self.calculate_reward(_updated_signal, _updated_interference, _SE_CF)
 
         # Check if the episode is done
-        done = True if _reward > 1 else False
-
+        # done = True if _reward > 1 else False
+        done = False
         truncated = False
 
         # Additional info
@@ -152,7 +153,8 @@ class MobilityCFmMIMOEnv(gym.Env):
         """
         # _SINR = calc_SINR(self.UEs_power, signal, interference)
         # _r = np.sum(np.log2(1 + _SINR))
-        _r = np.sum(SE)
+        SE = compute_se_np(signal, interference, self.UEs_power, sim_para.prelog_factor)
+        _r = np.mean(SE)
         return float(_r)
 
     def calculate(self, signal, interference, action, lagging_SE, pilot_index, beta_val):
@@ -198,7 +200,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _current_Beta_k
             _info['signal'] = signal
             _info['interference'] = interference
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
             _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
@@ -211,7 +213,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _new_Beta_k.detach().cpu().numpy()
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         return _info
 
@@ -226,7 +228,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _current_Beta_k
             _info['signal'] = signal
             _info['interference'] = interference
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
             _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
@@ -239,7 +241,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _new_Beta_k.detach().cpu().numpy()
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         return _info
 
@@ -254,7 +256,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _current_Beta_k
             _info['signal'] = signal
             _info['interference'] = interference
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
             _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
@@ -267,7 +269,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['Beta_K'] = _new_Beta_k.detach().cpu().numpy()
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
-            _info['predicted_power'] = _opt_power
+            _info['optimized_power'] = _opt_power
 
         return _info
 
