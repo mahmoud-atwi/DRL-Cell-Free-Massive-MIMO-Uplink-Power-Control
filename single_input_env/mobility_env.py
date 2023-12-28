@@ -4,10 +4,10 @@ import torch
 from gymnasium import spaces
 
 import simulation_para as sim_para
-from compute_spectral_efficiency import compute_se_np
+from compute_spectral_efficiency import compute_se
 from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
 from random_waypoint import random_waypoint
-from simulation_setup import CF_mMIMO_Env
+from simulation_setup import cf_mimo_simulation
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -106,7 +106,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         _UE_init_locations = torch.rand(self.K, dtype=torch.complex64, device=device) * self.square_length
 
         _init_B_k, _init_signal, _init_interference, _init_SE, _init_pilot_index, _init_beta_val, *_ = (
-            CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power, self.initial_power, self.APs_positions,
+            cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power, self.initial_power, self.APs_positions,
                          _UE_init_locations, self.square_length, self.decorr, self.sigma_sf, self.noise_variance_dbm,
                          self.delta))
 
@@ -124,7 +124,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         """
         Update the Beta_K values based on the given action.
         """
-        _updated_Beta_k, _updated_signal, _updated_interference, _SE_CF, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p,
+        _updated_Beta_k, _updated_signal, _updated_interference, _SE_CF, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
                                                                                            self.max_power,
                                                                                            self.UEs_power,
                                                                                            self.APs_positions,
@@ -170,7 +170,7 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         if not lagging_SE:
             # Recalculate new B_k, signal and interference based on the new UL power
-            _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+            _new_Beta_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
                                                                            _allocated_UEs_power, self.APs_positions,
                                                                            self.UEs_positions, self.square_length,
                                                                            self.decorr, self.sigma_sf,
@@ -197,7 +197,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
-            _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+            _new_Beta_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
                                                                            _opt_power, self.APs_positions,
                                                                            self.UEs_positions, self.square_length,
                                                                            self.decorr, self.sigma_sf,
@@ -225,7 +225,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
-            _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+            _new_Beta_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
                                                                            _opt_power, self.APs_positions,
                                                                            self.UEs_positions, self.square_length,
                                                                            self.decorr, self.sigma_sf,
@@ -253,7 +253,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_SE:
-            _new_Beta_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+            _new_Beta_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
                                                                            _opt_power, self.APs_positions,
                                                                            self.UEs_positions, self.square_length,
                                                                            self.decorr, self.sigma_sf,
