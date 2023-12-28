@@ -1,252 +1,316 @@
+from typing import Tuple
+
 import gymnasium as gym
 import numpy as np
-import torch
 from gymnasium import spaces
 
-from helper_functions import calc_SINR
+import simulation_para as sim_para
+from _utils import generate_ap_locations, generate_ue_locations, calc_sinr
+from compute_spectral_efficiency import compute_se
 from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
-from simulation_setup import CF_mMIMO_Env
+from random_waypoint import random_waypoint
+from simulation_setup import cf_mimo_simulation
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-
-class CFmMIMOEnv(gym.Env):
+class MobilityCFmMIMOEnv(gym.Env):
     """
-    Custom Environment for Cell-Free Massive MIMO system that follows the gym interface.
-    Observation state is B_K, an aggregated LSF coefficient for each user k.
+    A custom Gymnasium (Gym) environment for a Cell-Free Massive MIMO system.
+
+    This environment simulates a cell-free massive MIMO system, incorporating user mobility and dynamic
+    power control. The observation space consists of aggregated large-scale fading coefficients for each
+    user, and the action space involves adjusting uplink power levels for each user.
+
+    Attributes:
+        L (int): Number of APs.
+        K (int): Number of UEs.
+        tau_p (int): Number of orthogonal pilots.
+        max_power (float): Maximum transmit power.
+        min_power (float): Minimum transmit power.
+        initial_power (float): Initial power setting for simulations.
+        UEs_power (Optional[np.ndarray]): Uplink power levels for each user.
+        APs_positions (np.ndarray): Positions of the APs.
+        UEs_positions (np.ndarray): Positions of the UEs.
+        square_length (float): Length of the area square in meters.
+        decorr (float): Decorrelation distance for shadow fading.
+        sigma_sf (float): Shadow fading standard deviation in dB.
+        noise_variance_dbm (float): Noise variance in dBm.
+        delta (float): Shadow fading decorrelation parameter.
+        UEs_mobility (bool): Flag to enable mobility for UEs.
+        relocate_APs_on_reset (bool): Flag to relocate APs on environment reset.
+        relocate_UEs_on_reset (bool): Flag to relocate UEs on environment reset.
+        area_bounds (Tuple[float, float, float, float]): Bounds of the simulation area.
+        reward_method (str): Method used to calculate the reward. It can be one of the following:
+            - 'channel_capacity': Calculates reward based on channel capacity, using the sum of logarithmic
+              Signal-to-Interference-plus-Noise Ratios (SINRs).
+            - 'min_se': Uses the minimum spectral efficiency among all users, emphasizing the worst-case performance.
+            - 'mean_se': Employs the average spectral efficiency across all users, providing a balance between
+              fairness and efficiency.
+            - 'sum_se': Considers the sum of spectral efficiencies of all users, prioritizing total system throughput.
+            - 'geo_mean_se': Uses the geometric mean of spectral efficiencies, offering a compromise between
+              fairness and total throughput.
+        action_space (spaces.Box): The action space representing UL power levels.
+        observation_space (spaces.Box): The observation space representing B_k values.
+        state (np.ndarray): Current state of the environment.
     """
 
-    def __init__(self, L, K, tau_p, initial_power, min_power, max_power, APs_positions, UEs_positions, square_length,
-                 decorr, sigma_sf, noise_variance_dbm, delta):
-        super(CFmMIMOEnv, self).__init__()
+    def __init__(self, **kwargs):
+        super(MobilityCFmMIMOEnv, self).__init__()
 
-        self.L = L
-        self.K = K
-        self.tau_p = tau_p
-        self.max_power = max_power
-        self.min_power = min_power
-        self.initial_power = initial_power
-        self.UEs_power = None
-        self.APs_positions = APs_positions
-        self.UEs_positions = UEs_positions
-        self.square_length = square_length
-        self.decorr = decorr
-        self.sigma_sf = sigma_sf
-        self.noise_variance_dbm = noise_variance_dbm
-        self.delta = delta
+        self.L = kwargs.get('L', 64)
+        self.K = kwargs.get('K', 32)
+        self.tau_p = kwargs.get('tau_p', 20)
+        self.max_power = kwargs.get('max_power', 100)
+        self.min_power = kwargs.get('min_power', 0)
+        self.initial_power = kwargs.get('initial_power', 100)
+        self.UEs_power = kwargs.get('UEs_power', None)
+        self.APs_positions = kwargs.get('APs_positions')
+        self.UEs_positions = kwargs.get('UEs_positions')
+        self.square_length = kwargs.get('square_length', 1000)
+        self.decorr = kwargs.get('decorr', 100)
+        self.sigma_sf = kwargs.get('sigma_sf', 8)
+        self.noise_variance_dbm = kwargs.get('noise_variance_dbm', -92)
+        self.delta = kwargs.get('delta', 0.5)
+        self.UEs_mobility = kwargs.get('UEs_mobility', False)
+        self.relocate_APs_on_reset = kwargs.get('relocate_AP_on_reset', False)
+        self.relocate_UEs_on_reset = kwargs.get('relocate_UEs_on_reset', False)
+        self.area_bounds = (0, self.square_length, 0, self.square_length)
+        self.reward_method = kwargs.get('reward_method', 'min_se')
 
         # Define action space (continuous UL power levels for each UE)
-        self.action_space = spaces.Box(low=-1, high=1, shape=(K,), dtype=np.float32)
-        # Store the original power range for rescaling
-        self.power_range = (min_power, max_power)
+        self.action_space = spaces.Box(low=-1, high=1, shape=(self.K,), dtype=np.float32)
 
         # Define observation space (B_k values)
-        self.observation_space = spaces.Box(low=np.float32(0), high=np.float32(np.inf), shape=(K,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=np.float32(0), high=np.float32(np.inf), shape=(self.K,),
+                                            dtype=np.float32)
 
         # Initial state (B_K values)
-        self.state, *_ = self.initialize_B_K()
+        self.state, *_ = self.initialize_state()
 
-    def reset(self, **kwargs):
-        """
-        Reset the state of the environment to an initial state
-        """
+    def reset(self, **kwargs) -> Tuple[np.ndarray, dict]:
         # Initialize/reset the state (B_K values)
-        self.state, init_signal_CF, init_interference_CF, pilot_index_CF, beta_val_CF = self.initialize_B_K()
+        _init_Beta_K, _init_signal, _init_interference, _init_SE, _init_pilot_index, _init_beta_val = (
+            self.initialize_state())
 
-        info = dict()
+        self.state = _init_Beta_K
 
-        info['init_signal'] = init_signal_CF
-        info['init_interference'] = init_interference_CF
-        info['init_pilot_index'] = pilot_index_CF
-        info['init_beta_val'] = beta_val_CF
+        _info = dict()
 
-        return self.state, info
+        _info['init_signal'] = self.state
+        _info['init_interference'] = _init_interference
+        _info['init_pilot_index'] = _init_pilot_index
+        _info['init_beta_val'] = _init_beta_val
 
-    def step(self, action):
-        """
-        Apply action (adjust UL power) and calculate next state (B_k values)
-        """
+        return self.state, _info
+
+    def step(self, action) -> Tuple[np.ndarray, float, bool, bool, dict]:
+        # Step method implementation
+
         # Adjust UL power based on action
-        min_power, max_power = self.power_range
-        rescaled_action = ((action + 1) / 2) * (max_power - min_power) + min_power
+        _rescaled_action = ((action + 1) / 2) * (self.max_power - self.min_power) + self.min_power
 
-        self.UEs_power = rescaled_action  # Action is the new UL power levels
+        self.UEs_power = _rescaled_action  # Action is the new UL power levels
+
+        if self.UEs_mobility:
+            self.UEs_positions = self.update_ue_positions()
 
         # Recalculate B_k based on the new UL power
-        updated_B_k, signal_CF, interference_CF = self.update_B_K()
+        _updated_Beta_K, _updated_signal, _updated_interference, _cf_spectral_efficiency = self.update_state()
 
         # Calculate reward
-        reward = self.calculate_reward(signal_CF, interference_CF)
+        _reward = self.calculate_reward(_updated_signal, _updated_interference, _cf_spectral_efficiency)
 
         done = False
         truncated = False
 
         # Additional info
-        info = dict()
+        _info = dict()
 
-        info['signal'] = signal_CF
-        info['interference'] = interference_CF
-        info['predicted_power'] = rescaled_action
+        _info['signal'] = _updated_signal
+        _info['interference'] = _updated_interference
+        _info['predicted_power'] = _rescaled_action
 
         # Update the state
-        self.state = updated_B_k
+        self.state = _updated_Beta_K
 
-        return updated_B_k, reward, done, truncated, info
+        return self.state, _reward, done, truncated, _info
 
-    def initialize_B_K(self):
+    def initialize_state(self) -> Tuple[np.ndarray, ...]:
+        # Method to initialize the state
+        if self.relocate_APs_on_reset:
+            self.APs_positions = generate_ap_locations(self.L, 100, self.area_bounds)
+        if self.relocate_UEs_on_reset:
+            self.UEs_positions = generate_ue_locations(self.K, self.area_bounds)
 
-        UE_init_locations = torch.rand(self.K, dtype=torch.complex64, device=device) * self.square_length
+        (
+            _init_Beta_K, _init_signal, _init_interference, _init_cf_spectral_efficiency, _init_pilot_index,
+            _init_beta_val, *_
+        ) = CF_mMIMO_Env(
+            self.L, self.K, self.tau_p, self.max_power, self.initial_power, self.APs_positions, self.UEs_positions,
+            self.square_length, self.decorr, self.sigma_sf, self.noise_variance_dbm, self.delta)
 
-        init_B_k, signal_CF, interference_CF, pilot_index, beta_val, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p,
-                                                                                       self.max_power,
-                                                                                       self.initial_power,
-                                                                                       self.APs_positions,
-                                                                                       UE_init_locations,
-                                                                                       self.square_length, self.decorr,
-                                                                                       self.sigma_sf,
-                                                                                       self.noise_variance_dbm,
-                                                                                       self.delta)
+        return (_init_Beta_K, _init_signal, _init_interference, _init_cf_spectral_efficiency, _init_pilot_index,
+                _init_beta_val)
 
-        init_B_k_np = init_B_k.detach().cpu().numpy()
-        signal_CF_np = signal_CF.detach().cpu().numpy()
-        interference_CF_np = interference_CF.detach().cpu().numpy()
-        pilot_index_np = pilot_index.detach().cpu().numpy()
-        beta_val_np = beta_val.detach().cpu().numpy()
+    def update_state(self) -> Tuple[np.ndarray, ...]:
+        # Method to update the state
+        _updated_Beta_K, _updated_signal, _updated_interference, _updated_cf_spectral_efficiency, *_ = CF_mMIMO_Env(
+            self.L, self.K, self.tau_p,
+            self.max_power,
+            self.UEs_power,
+            self.APs_positions,
+            self.UEs_positions,
+            self.square_length,
+            self.decorr, self.sigma_sf,
+            self.noise_variance_dbm,
+            self.delta)
 
-        return init_B_k_np, signal_CF_np, interference_CF_np, pilot_index_np, beta_val_np
+        return _updated_Beta_K, _updated_signal, _updated_interference, _updated_cf_spectral_efficiency
 
-    def update_B_K(self):
-        """
-        Update the B_K values based on the given action.
-        """
-        updated_B_k, signal_CF, interference_CF, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                   self.UEs_power, self.APs_positions,
-                                                                   self.UEs_positions, self.square_length, self.decorr,
-                                                                   self.sigma_sf, self.noise_variance_dbm, self.delta)
+    def calculate_reward(self, signal: np.ndarray, interference: np.ndarray,
+                         cf_spectral_efficiency: np.ndarray) -> float:
+        # Method to calculate the reward
+        if self.reward_method == "channel_capacity":
+            _SINR = calc_sinr(self.UEs_power, signal, interference)
+            _r = np.sum(np.log2(1 + _SINR))
+        elif self.reward_method == "min_se":
+            SE = compute_se(signal, interference, self.UEs_power, sim_para.prelog_factor)
+            _r = np.min(SE)
+        elif self.reward_method == "mean_se":
+            SE = compute_se(signal, interference, self.UEs_power, sim_para.prelog_factor)
+            _r = np.mean(SE)
+        elif self.reward_method == "sum_se":
+            SE = compute_se(signal, interference, self.UEs_power, sim_para.prelog_factor)
+            _r = np.sum(SE)
+        elif self.reward_method == "geo_mean_se":
+            SE = compute_se(signal, interference, self.UEs_power, sim_para.prelog_factor)
+            # Calculate geometric mean
+            geometric_mean = np.prod(SE) ** (1.0 / len(SE))
+            return geometric_mean
+        else:
+            # fallback to min_se in case the reward_method provided is not supported and raise warning
+            SE = compute_se(signal, interference, self.UEs_power, sim_para.prelog_factor)
+            _r = np.min(SE)
 
-        updated_B_k_np = updated_B_k.detach().cpu().numpy()
-        signal_CF_np = signal_CF.detach().cpu().numpy()
-        interference_CF_np = interference_CF.detach().cpu().numpy()
+    def calculate(self, signal: np.ndarray, interference: np.ndarray, action: np.ndarray,
+                  lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+        # Method to apply action and calculate next state without updating the state
 
-        return updated_B_k_np, signal_CF_np, interference_CF_np
+        _info = dict()
 
-    def calculate_reward(self, signal, interference):
-        """
-        Calculate the reward for the given action and state.
-        """
-        SINR = calc_SINR(self.UEs_power, signal, interference)
-        r = np.sum(np.log2(1 + SINR))
-        return float(r)
-
-    def calculate(self, signal, interference, action, lagging_SE, pilot_index, beta_val):
-        """
-        Apply action (adjust UL power) and calculate next state (B_k values) without updating the state
-        """
-        info = dict()
-        new_B_k = self.state
         # Adjust UL power based on action
-        min_power, max_power = self.power_range
-        rescaled_action = ((action + 1) / 2) * (max_power - min_power) + min_power
+        _allocated_UEs_power = ((action + 1) / 2) * (self.max_power - self.min_power) + self.min_power
 
-        self.UEs_power = rescaled_action  # Action is the new UL power levels
+        if lagging_spectral_efficiency:
+            _info['Beta_K'] = self.state
+            _info['signal'] = signal
+            _info['interference'] = interference
+            _info['predicted_power'] = _allocated_UEs_power
 
-        if lagging_SE:
-            info['signal'] = signal
-            info['interference'] = interference
-            info['predicted_power'] = rescaled_action
-
-        if not lagging_SE:
+        if not lagging_spectral_efficiency:
             # Recalculate new B_k, signal and interference based on the new UL power
-            new_B_k, new_signal, new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                     self.UEs_power, self.APs_positions,
-                                                                     self.UEs_positions, self.square_length,
-                                                                     self.decorr,
-                                                                     self.sigma_sf, self.noise_variance_dbm, self.delta,
-                                                                     pilot_index, beta_val)
+            _new_Beta_K, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+                                                                           _allocated_UEs_power, self.APs_positions,
+                                                                           self.UEs_positions, self.square_length,
+                                                                           self.decorr, self.sigma_sf,
+                                                                           self.noise_variance_dbm, self.delta,
+                                                                           pilot_index, beta_val)
+            _info['Beta_K'] = _new_Beta_K
+            _info['signal'] = _new_signal
+            _info['interference'] = _new_interference
+            _info['predicted_power'] = _allocated_UEs_power
 
-            info['signal'] = new_signal.detach().cpu().numpy()
-            info['interference'] = new_interference.detach().cpu().numpy()
-            info['predicted_power'] = rescaled_action
+        return _info
 
-        return new_B_k, info
+    def maxmin_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
+                    lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+        # Method implementing the max-min power control algorithm
+        _info = dict()
+        _current_Beta_K = self.state
 
-    def maxmin_algo(self, signal, interference, max_power, prelog_factor, lagging_SE, pilot_index, beta_val):
+        _, _opt_power = power_opt_maxmin(signal, interference, max_power, prelog_factor,
+                                         return_spectral_efficiency=False)
 
-        info = dict()
-        new_B_k = self.state
+        if lagging_spectral_efficiency:
+            _info['Beta_K'] = _current_Beta_K
+            _info['signal'] = signal
+            _info['interference'] = interference
+            _info['optimized_power'] = _opt_power
 
-        _, opt_power = power_opt_maxmin(signal, interference, max_power, prelog_factor, return_SE=False)
+        if not lagging_spectral_efficiency:
+            _new_Beta_K, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+                                                                           _opt_power, self.APs_positions,
+                                                                           self.UEs_positions, self.square_length,
+                                                                           self.decorr, self.sigma_sf,
+                                                                           self.noise_variance_dbm, self.delta,
+                                                                           pilot_index, beta_val)
 
-        if lagging_SE:
-            info['signal'] = signal
-            info['interference'] = interference
-            info['predicted_power'] = opt_power
+            _info['Beta_K'] = _new_Beta_K
+            _info['signal'] = _new_signal
+            _info['interference'] = _new_interference
+            _info['optimized_power'] = _opt_power
 
-        if not lagging_SE:
-            new_B_k, new_signal, new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                     opt_power, self.APs_positions,
-                                                                     self.UEs_positions, self.square_length,
-                                                                     self.decorr,
-                                                                     self.sigma_sf, self.noise_variance_dbm, self.delta,
-                                                                     pilot_index, beta_val)
+        return _info
 
-            info['signal'] = new_signal.detach().cpu().numpy()
-            info['interference'] = new_interference.detach().cpu().numpy()
-            info['predicted_power'] = opt_power
+    def maxprod_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
+                     lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+        # Method implementing the max-product SINR power control algorithm
+        _info = dict()
+        _, _opt_power = power_opt_prod_sinr(signal, interference, max_power, prelog_factor,
+                                            return_spectral_efficiency=False)
 
-        return new_B_k, info
+        if lagging_spectral_efficiency:
+            _info['Beta_K'] = self.state
+            _info['signal'] = signal
+            _info['interference'] = interference
+            _info['optimized_power'] = _opt_power
 
-    def maxprod_algo(self, signal, interference, max_power, prelog_factor, lagging_SE, pilot_index, beta_val):
+        if not lagging_spectral_efficiency:
+            _new_Beta_K, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+                                                                           _opt_power, self.APs_positions,
+                                                                           self.UEs_positions, self.square_length,
+                                                                           self.decorr, self.sigma_sf,
+                                                                           self.noise_variance_dbm, self.delta,
+                                                                           pilot_index, beta_val)
 
-        info = dict()
-        new_B_k = self.state
+            _info['Beta_K'] = _new_Beta_K
+            _info['signal'] = _new_signal
+            _info['interference'] = _new_interference
+            _info['optimized_power'] = _opt_power
 
-        _, opt_power = power_opt_prod_sinr(signal, interference, max_power, prelog_factor, return_SE=False)
+        return _info
 
-        if lagging_SE:
-            info['signal'] = signal
-            info['interference'] = interference
-            info['predicted_power'] = opt_power
+    def maxsumrate_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
+                        lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+        # Method implementing the max-sum-rate power control algorithm
+        _info = dict()
+        _, _opt_power = power_opt_sum_rate(signal, interference, max_power, prelog_factor,
+                                           return_spectral_efficiency=False)
 
-        if not lagging_SE:
-            new_B_k, new_signal, new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                     opt_power, self.APs_positions,
-                                                                     self.UEs_positions, self.square_length,
-                                                                     self.decorr,
-                                                                     self.sigma_sf, self.noise_variance_dbm, self.delta,
-                                                                     pilot_index, beta_val)
+        if lagging_spectral_efficiency:
+            _info['Beta_K'] = self.state
+            _info['signal'] = signal
+            _info['interference'] = interference
+            _info['optimized_power'] = _opt_power
 
-            info['signal'] = new_signal.detach().cpu().numpy()
-            info['interference'] = new_interference.detach().cpu().numpy()
-            info['predicted_power'] = opt_power
+        if not lagging_spectral_efficiency:
+            _new_Beta_K, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
+                                                                           _opt_power, self.APs_positions,
+                                                                           self.UEs_positions, self.square_length,
+                                                                           self.decorr, self.sigma_sf,
+                                                                           self.noise_variance_dbm, self.delta,
+                                                                           pilot_index, beta_val)
 
-        return new_B_k, info
+            _info['Beta_K'] = _new_Beta_K
+            _info['signal'] = _new_signal
+            _info['interference'] = _new_interference
+            _info['optimized_power'] = _opt_power
 
-    def maxsumrate_algo(self, signal, interference, max_power, prelog_factor, lagging_SE, pilot_index, beta_val):
+        return _info
 
-        info = dict()
-        new_B_k = self.state
-
-        _, opt_power = power_opt_sum_rate(signal, interference, max_power, prelog_factor, return_SE=False)
-
-        if lagging_SE:
-            info['signal'] = signal
-            info['interference'] = interference
-            info['predicted_power'] = opt_power
-
-        if not lagging_SE:
-            new_B_k, new_signal, new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                     opt_power, self.APs_positions,
-                                                                     self.UEs_positions, self.square_length,
-                                                                     self.decorr,
-                                                                     self.sigma_sf, self.noise_variance_dbm, self.delta,
-                                                                     pilot_index, beta_val)
-
-            info['signal'] = new_signal.detach().cpu().numpy()
-            info['interference'] = new_interference.detach().cpu().numpy()
-            info['predicted_power'] = opt_power
-
-        return new_B_k, info
+    def update_ue_positions(self) -> np.ndarray:
+        # Method to update user equipment positions based on mobility
+        return random_waypoint(self.UEs_positions, self.area_bounds, sim_para.speed_range, sim_para.max_pause_time,
+                               sim_para.time_step, sim_para.pause_prob)
 
     def close(self):
         pass
