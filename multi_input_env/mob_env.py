@@ -3,10 +3,10 @@ import numpy as np
 import torch
 from gymnasium import spaces
 
-from helper_functions import calc_SINR
+from _utils import calc_sinr
 from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
-from simulation_setup import CF_mMIMO_Env
 from random_waypoint import random_waypoint
+from simulation_setup import cf_mimo_simulation
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -106,18 +106,18 @@ class MobCFmMIMOEnv(gym.Env):
         UE_init_locations = torch.rand(self.K, dtype=torch.complex64, device=device) * self.square_length
 
         _init_B_k, _init_signal, _init_interference, _init_pilot_index, _init_beta_val, *_ \
-            = CF_mMIMO_Env(self.L,
-                           self.K,
-                           self.tau_p,
-                           self.max_power,
-                           self.initial_power,
-                           self.APs_positions,
-                           UE_init_locations,
-                           self.square_length,
-                           self.decorr,
-                           self.sigma_sf,
-                           self.noise_variance_dbm,
-                           self.delta)
+            = cf_mimo_simulation(self.L,
+                                 self.K,
+                                 self.tau_p,
+                                 self.max_power,
+                                 self.initial_power,
+                                 self.APs_positions,
+                                 UE_init_locations,
+                                 self.square_length,
+                                 self.decorr,
+                                 self.sigma_sf,
+                                 self.noise_variance_dbm,
+                                 self.delta)
 
         _init_B_k_np = _init_B_k.detach().cpu().numpy()
         _signal_np = _init_signal.detach().cpu().numpy()
@@ -145,12 +145,14 @@ class MobCFmMIMOEnv(gym.Env):
         """
         Update the B_K values based on the given action.
         """
-        _updated_B_k, _update_signal, _update_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p,
-                                                                              self.max_power, self.UEs_power,
-                                                                              self.APs_positions, self.UEs_positions,
-                                                                              self.square_length, self.decorr,
-                                                                              self.sigma_sf, self.noise_variance_dbm,
-                                                                              self.delta)
+        _updated_B_k, _update_signal, _update_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                                                                    self.max_power, self.UEs_power,
+                                                                                    self.APs_positions,
+                                                                                    self.UEs_positions,
+                                                                                    self.square_length, self.decorr,
+                                                                                    self.sigma_sf,
+                                                                                    self.noise_variance_dbm,
+                                                                                    self.delta)
 
         _updated_B_k_np = _updated_B_k.detach().cpu().numpy()
         _update_signal_np = _update_signal.detach().cpu().numpy()
@@ -162,7 +164,7 @@ class MobCFmMIMOEnv(gym.Env):
         """
         Calculate the reward for the given action and state.
         """
-        SINR = calc_SINR(self.UEs_power, signal, interference)
+        SINR = calc_sinr(self.UEs_power, signal, interference)
         r = np.sum(np.log2(1 + SINR))
 
         return float(r)
@@ -184,12 +186,13 @@ class MobCFmMIMOEnv(gym.Env):
 
         if not lagging_SE:
             # Recalculate new B_k, signal and interference based on the new UL power
-            _new_B_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                        allocated_power, self.APs_positions,
-                                                                        self.UEs_positions, self.square_length,
-                                                                        self.decorr, self.sigma_sf,
-                                                                        self.noise_variance_dbm, self.delta,
-                                                                        pilot_index, beta_val)
+            _new_B_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                                                              self.max_power,
+                                                                              allocated_power, self.APs_positions,
+                                                                              self.UEs_positions, self.square_length,
+                                                                              self.decorr, self.sigma_sf,
+                                                                              self.noise_variance_dbm, self.delta,
+                                                                              pilot_index, beta_val)
 
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
@@ -210,13 +213,14 @@ class MobCFmMIMOEnv(gym.Env):
             _info['predicted_power'] = _optimized_power
 
         if not lagging_SE:
-            _new_B_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                        _optimized_power, self.APs_positions,
-                                                                        self.UEs_positions, self.square_length,
-                                                                        self.decorr,
-                                                                        self.sigma_sf, self.noise_variance_dbm,
-                                                                        self.delta,
-                                                                        pilot_index, beta_val)
+            _new_B_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                                                              self.max_power,
+                                                                              _optimized_power, self.APs_positions,
+                                                                              self.UEs_positions, self.square_length,
+                                                                              self.decorr,
+                                                                              self.sigma_sf, self.noise_variance_dbm,
+                                                                              self.delta,
+                                                                              pilot_index, beta_val)
 
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
@@ -237,12 +241,13 @@ class MobCFmMIMOEnv(gym.Env):
             _info['predicted_power'] = _optimized_power
 
         if not lagging_SE:
-            _new_B_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                        _optimized_power, self.APs_positions,
-                                                                        self.UEs_positions, self.square_length,
-                                                                        self.decorr, self.sigma_sf,
-                                                                        self.noise_variance_dbm, self.delta,
-                                                                        pilot_index, beta_val)
+            _new_B_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                                                              self.max_power,
+                                                                              _optimized_power, self.APs_positions,
+                                                                              self.UEs_positions, self.square_length,
+                                                                              self.decorr, self.sigma_sf,
+                                                                              self.noise_variance_dbm, self.delta,
+                                                                              pilot_index, beta_val)
 
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
@@ -263,12 +268,13 @@ class MobCFmMIMOEnv(gym.Env):
             _info['predicted_power'] = _optimized_power
 
         if not lagging_SE:
-            _new_B_k, _new_signal, _new_interference, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                        _optimized_power, self.APs_positions,
-                                                                        self.UEs_positions, self.square_length,
-                                                                        self.decorr, self.sigma_sf,
-                                                                        self.noise_variance_dbm, self.delta,
-                                                                        pilot_index, beta_val)
+            _new_B_k, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                                                              self.max_power,
+                                                                              _optimized_power, self.APs_positions,
+                                                                              self.UEs_positions, self.square_length,
+                                                                              self.decorr, self.sigma_sf,
+                                                                              self.noise_variance_dbm, self.delta,
+                                                                              pilot_index, beta_val)
 
             _info['signal'] = _new_signal.detach().cpu().numpy()
             _info['interference'] = _new_interference.detach().cpu().numpy()
