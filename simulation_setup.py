@@ -1,119 +1,128 @@
 from math import sqrt
+from typing import Tuple, Optional, Union
 
 import numpy as np
-import torch
 from scipy.linalg import sqrtm
 
+from _utils import db2pow
 from compute_spectral_efficiency import compute_se_cf_ul
-from helper_functions import db2pow
 from pathloss_threeslope import path_loss_three_slope
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+def cf_mimo_simulation(L: int, K: int, tau_p: int, max_power: float, UEs_power: Union[float, np.ndarray],
+                       APs_positions: np.ndarray, UEs_positions: np.ndarray, square_length: float, decorr: float,
+                       sigma_sf: float, noise_variance_dbm: float, delta: float,
+                       pilot_index_loopback: Optional[np.ndarray] = None,
+                       beta_val_loopback: Optional[np.ndarray] = None) -> Tuple[np.ndarray, ...]:
+    """
+    Simulates a cell-free massive MIMO system to calculate various system parameters.
 
-def CF_mMIMO_Env(L, K, tau_p, max_power, UEs_power, APs_positions, UEs_positions, square_length, decorr, sigma_sf,
-                 noise_variance_dbm, delta, pilot_index_loopback=None, beta_val_loopback=None):
+    This function simulates a cell-free (CF) Massive MIMO environment given the system parameters. It calculates the
+    large-scale fading coefficients, pilot assignments, and other relevant metrics for the system.
 
+    :param L: Number of antennas at the base station.
+    :param K: Number of users in the system.
+    :param tau_p: Length of the pilot sequence.
+    :param max_power: Maximum transmit power.
+    :param UEs_power: Uplink power levels for each user.
+    :param APs_positions: Positions of the access points.
+    :param UEs_positions: Positions of the user equipments.
+    :param square_length: Length of the area square in meters.
+    :param decorr: Decorrelation distance for shadow fading.
+    :param sigma_sf: Shadow fading standard deviation in dB.
+    :param noise_variance_dbm: Noise variance in dBm.
+    :param delta: Shadow fading decorrelation parameter.
+    :param pilot_index_loopback: Optional array for pilot index reuse.
+    :param beta_val_loopback: Optional array for beta values reuse.
+    :return: A tuple containing Beta_K, cf_signal, cf_interference, cf_spectral_efficiency, pilot_index_CF, beta_val,
+             APs_positions, and UEs_positions.
+    """
     if beta_val_loopback is None:
-        gain_over_noise_db = torch.zeros((L, K), device=device)
-        distances_to_UE = torch.zeros((L, K), device=device)
+        gain_over_noise_db = np.zeros((L, K))
+        distances_to_UE = np.zeros((L, K))
 
-        # Compute alternative AP and UE locations by using wrap around
-        wrap_horizontal = torch.tile(torch.tensor([-square_length, 0, square_length]), (3, 1)).to(device)
+        wrap_horizontal = np.tile(np.array([-square_length, 0, square_length]), (3, 1))
         wrap_vertical = wrap_horizontal.T
         wrap_locations = (wrap_horizontal + 1j * wrap_vertical).T.flatten()
 
-        wrapped_AP_positions = torch.tile(APs_positions.flatten(), (len(wrap_locations), 1)).T + torch.tile(
+        wrapped_AP_positions = np.tile(APs_positions.flatten(), (len(wrap_locations), 1)).T + np.tile(
             wrap_locations,
             (L, 1))
-        wrapped_UE_positions = torch.tile(UEs_positions.flatten(), (len(wrap_locations), 1)).T + torch.tile(
+        wrapped_UE_positions = np.tile(UEs_positions.flatten(), (len(wrap_locations), 1)).T + np.tile(
             wrap_locations,
             (K, 1))
 
-        shadow_corr_matrix_APs = torch.zeros((L, L), device=device)
-        shadow_corr_matrix_UEs = torch.zeros((K, K), device=device)
+        shadow_corr_matrix_APs = np.zeros((L, L))
+        shadow_corr_matrix_UEs = np.zeros((K, K))
 
         for l in range(L):
-            distance_to_AP = torch.min(torch.abs(wrapped_AP_positions - APs_positions[l]), dim=1).values
+            distance_to_AP = np.min(np.abs(wrapped_AP_positions - APs_positions[l]), axis=1)
             shadow_corr_matrix_APs[:, l] = 2 ** (-1 * distance_to_AP / decorr)
 
         for k in range(K):
-            distance_to_UE = torch.min(torch.abs(wrapped_UE_positions - UEs_positions[k]), dim=1).values
+            distance_to_UE = np.min(np.abs(wrapped_UE_positions - UEs_positions[k]), axis=1)
             shadow_corr_matrix_UEs[:, k] = 2 ** (-1 * distance_to_UE / decorr)
 
-        # Generate shadow fading realizations
-        a = sigma_sf * sqrtm(shadow_corr_matrix_APs.cpu()) @ np.random.randn(L, )
-        b = sigma_sf * sqrtm(shadow_corr_matrix_UEs.cpu()) @ np.random.randn(K, )
+        a = sigma_sf * sqrtm(shadow_corr_matrix_APs) @ np.random.randn(L, )
+        b = sigma_sf * sqrtm(shadow_corr_matrix_UEs) @ np.random.randn(K, )
 
-        a = torch.from_numpy(a.real).to(device)
-        b = torch.from_numpy(b.real).to(device)
+        a = a.real
+        b = b.real
 
-        # Compute distances and channel gain
         for k in range(K):
-            distance_to_UE, position_indices = torch.min(
-                torch.abs(wrapped_AP_positions - torch.tile(UEs_positions[k], wrapped_AP_positions.shape)), dim=1)
+            distance_to_UE = np.min(
+                np.abs(wrapped_AP_positions - np.tile(UEs_positions[k], wrapped_AP_positions.shape)), axis=1)
+
             distances_to_UE[:, k] = distance_to_UE
 
             gain_over_noise_db[:, k] = path_loss_three_slope(distance_to_UE) - noise_variance_dbm
 
-            # Add shadow fading over 50 meters
             mask = distance_to_UE > 50
             gain_over_noise_db[mask, k] += sqrt(delta) * a[mask] + sqrt(1 - delta) * b[k]
 
         beta_val = db2pow(gain_over_noise_db)
     else:
-        beta_val = torch.from_numpy(beta_val_loopback).to(device)
+        beta_val = beta_val_loopback
 
     if pilot_index_loopback is None:
-        pilot_index_CF = (torch.randperm(K) % tau_p)
+        pilot_index_CF = np.random.permutation(K) % tau_p
     else:
-        pilot_index_CF = torch.from_numpy(pilot_index_loopback).to(device)
+        pilot_index_CF = pilot_index_loopback
 
-    # Run greedy algorithm to find optimal pilot allocation in cell-free network
     tau_c = tau_p + 1
+    cf_spectral_efficiency = np.zeros(K)
     for k in range(K):
-
-        SE_CF = compute_se_cf_ul(max_power, UEs_power, L, K, tau_p, tau_c, pilot_index_CF, beta_val)
-
-        # Find UE with the lowest SE
-        min_SE_UE = torch.argmin(SE_CF)
-
-        # Remove UE with the lowest SE from pilot allocation
+        cf_spectral_efficiency = compute_se_cf_ul(max_power, UEs_power, K, tau_p, tau_c, pilot_index_CF, beta_val)
+        min_SE_UE = np.argmin(cf_spectral_efficiency)
         pilot_index_CF[min_SE_UE] = -1
 
-        # Compute the interference level for each of the pilots
-        pilot_interference_CF = torch.zeros(tau_p, device=device)
-
+        pilot_interference_CF = np.zeros(tau_p)
         for i in range(tau_p):
             mask = pilot_index_CF == i
-            pilot_interference_CF[i] = torch.sum(beta_val[:, mask], dim=(0, 1))
+            pilot_interference_CF[i] = np.sum(beta_val[:, mask], axis=(0, 1))
 
-        # Find the pilot with the lowest interference
-        min_interference_pilot = torch.argmin(pilot_interference_CF)
-
-        # Assign the UE with the lowest SE to the pilot with the lowest interference
+        min_interference_pilot = np.argmin(pilot_interference_CF)
         pilot_index_CF[min_SE_UE] = min_interference_pilot
 
     max_power_tau_p = max_power * tau_p
     beta_val_squared = beta_val ** 2
-    gamma_val = torch.zeros((L, K), device=device)
-    interference_CF = torch.zeros((K, K), device=device)
+    gamma_val = np.zeros((L, K))
+    cf_interference = np.zeros((K, K))
 
     for k in range(K):
-        # Cell-Free mMIMO Computations
         mask_CF = pilot_index_CF[k] == pilot_index_CF
-        denominator = max_power_tau_p * torch.sum(beta_val[:, mask_CF], dim=1) + 1
+        denominator = max_power_tau_p * np.sum(beta_val[:, mask_CF], axis=1) + 1
         gamma_val[:, k] = (max_power_tau_p * beta_val_squared[:, k]) / denominator
-        noise_term = torch.sum(gamma_val[:, k])
-        interference_CF[:, k] += torch.sum(torch.tile(gamma_val[:, k], [K, 1]).T * beta_val, dim=0) / noise_term
+        noise_term = np.sum(gamma_val[:, k])
+        cf_interference[:, k] += np.sum(np.tile(gamma_val[:, k], [K, 1]).T * beta_val, axis=0) / noise_term
 
-        for ind in torch.where(mask_CF)[0]:
+        for ind in np.where(mask_CF)[0]:
             if ind != k:
-                interference_CF[ind, k] += torch.sum(
+                cf_interference[ind, k] += np.sum(
                     gamma_val[:, k] * beta_val[:, ind] / beta_val[:, k]) ** 2 / noise_term
 
-    signal_CF = torch.sum(gamma_val, dim=0)
+    cf_signal = np.sum(gamma_val, axis=0)
+    Beta_K = np.sum(beta_val, axis=0).astype(np.float32)
 
-    B_k = torch.sum(beta_val, dim=0)
-
-    return B_k, signal_CF, interference_CF, SE_CF, pilot_index_CF, beta_val, APs_positions, UEs_positions
+    return (Beta_K, cf_signal, cf_interference, cf_spectral_efficiency, pilot_index_CF, beta_val, APs_positions,
+            UEs_positions)
