@@ -12,3 +12,4 @@ tqdm~=4.66.1
 rich~=13.7.0
 matplotlib~=3.8.2
 wandb~=0.16.1
+PyYAML~=6.0.1
