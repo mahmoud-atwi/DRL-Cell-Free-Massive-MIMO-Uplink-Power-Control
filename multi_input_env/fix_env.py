@@ -3,8 +3,8 @@ import numpy as np
 import torch
 from gymnasium import spaces
 
-from helper_functions import calc_SINR
-from simulation_setup import CF_mMIMO_Env
+from _utils import calc_sinr
+from simulation_setup import cf_mimo_simulation
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -94,11 +94,12 @@ class FixCFmMIMOEnv(gym.Env):
         """
         Initialize the B_K values for each user.
         """
-        init_B_k, signal_CF, interference_CF, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                self.UEs_power, self.APs_positions,
-                                                                self.UEs_positions, self.square_length, self.decorr,
-                                                                self.sigma_sf,
-                                                                self.noise_variance_dbm, self.delta)
+        init_B_k, signal_CF, interference_CF, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
+                                                                      self.UEs_power, self.APs_positions,
+                                                                      self.UEs_positions, self.square_length,
+                                                                      self.decorr,
+                                                                      self.sigma_sf,
+                                                                      self.noise_variance_dbm, self.delta)
 
         # Scale UL Power to [-1, 1] for all UEs
         scaled_ul_power = 2 * (self.UEs_power - self.min_power) / (self.max_power - self.min_power) - 1
@@ -114,10 +115,12 @@ class FixCFmMIMOEnv(gym.Env):
         """
         Update the B_K values based on the given action.
         """
-        updated_B_k, signal_CF, interference_CF, *_ = CF_mMIMO_Env(self.L, self.K, self.tau_p, self.max_power,
-                                                                   self.UEs_power, self.APs_positions,
-                                                                   self.UEs_positions, self.square_length, self.decorr,
-                                                                   self.sigma_sf, self.noise_variance_dbm, self.delta)
+        updated_B_k, signal_CF, interference_CF, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power,
+                                                                         self.UEs_power, self.APs_positions,
+                                                                         self.UEs_positions, self.square_length,
+                                                                         self.decorr,
+                                                                         self.sigma_sf, self.noise_variance_dbm,
+                                                                         self.delta)
 
         updated_B_k_np = updated_B_k.cpu().numpy()
         signal_CF_np = signal_CF.cpu().numpy()
@@ -129,7 +132,7 @@ class FixCFmMIMOEnv(gym.Env):
         """
         Calculate the reward for the given action and state.
         """
-        SINR = calc_SINR(self.UEs_power, signal, interference)
+        SINR = calc_sinr(self.UEs_power, signal, interference)
         r = np.sum(np.log2(1 + SINR))
         return float(r)
 
