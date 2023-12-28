@@ -1,27 +1,27 @@
 from math import log10
 
 # Simulation Parameters
-L = 64
-K = 32
-tau_p = 20
-min_power = 0
-max_power = 100
-initial_power = 100
-prelog_factor = 1
+L = 64  # Number of APs
+K = 32  # Number of UEs
+tau_p = 20  # Number of orthogonal pilots
+min_power = 0  # Minimum transmit power
+max_power = 100  # Maximum transmit power
+initial_power = 100  # Initial power setting for simulations
+prelog_factor = 1  # Pre-logarithmic factor in capacity calculations
 
-# Three-Slope Simulation Parameters
-square_length = 1000  # meters
-bandwidth = 20e6  # bandwidth in Hz
-noise_figure = 9  # noise figure in dB
-noise_variance_dbm = -174 + 10 * log10(bandwidth) + noise_figure  # noise power in dBm
-sigma_sf = 8  # shadow fading standard deviation in dB
-delta = 0.5  # shadow fading decorrelation parameter
-decorr = 100  # decorrelation distance in meters
-antenna_spacing = 0.5  # antenna spacing in wavelengths
-angular_sd_deg = 15  # angular standard deviation in degrees
+# Three-Slope Model Simulation Parameters for large-scale fading
+square_length = 1000  # Square length of the area in meters
+bandwidth = 20e6  # System bandwidth in Hertz
+noise_figure = 9  # Noise figure in decibels (dB)
+noise_variance_dbm = -174 + 10 * log10(bandwidth) + noise_figure  # Total noise power in dBm
+sigma_sf = 8.0  # Shadow fading standard deviation in dB
+delta = 0.5  # Shadow fading decorrelation parameter
+decorr = 100  # Decorrelation distance for shadow fading in meters
+antenna_spacing = 0.5  # Antenna spacing in wavelengths
+angular_sd_deg = 15  # Standard deviation of the angle of arrival/departure in degrees
 
-# for mobility
-speed_range = [0.5, 5]
-max_pause_time = 5
-time_step = 1
-pause_prob = 0.3
+# Mobility Parameters
+speed_range = [0.5, 5]  # Range of user speeds
+max_pause_time = 5  # Maximum pause time for a user
+time_step = 1  # Time step for the mobility model
+pause_prob = 0.3  # Probability of a user pausing at each time step
