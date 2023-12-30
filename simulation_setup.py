@@ -37,6 +37,7 @@ def cf_mimo_simulation(L: int, K: int, tau_p: int, max_power: float, UEs_power: 
     :return: A tuple containing Beta_K, cf_signal, cf_interference, cf_spectral_efficiency, pilot_index_CF, beta_val,
              APs_positions, and UEs_positions.
     """
+
     if beta_val_loopback is None:
         gain_over_noise_db = np.zeros((L, K))
         distances_to_UE = np.zeros((L, K))
