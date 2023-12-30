@@ -1,0 +1,85 @@
+# Tuned SAC hyperparameters for MobilityCFmMIMOEnv-v0, MobilityCFmMIMOEnv-v1, MobilityCFmMIMOEnv-v2, MobilityCFmMIMOEnv-v3
+
+# Reward: channel capacity
+MobilityCFmMIMOEnv-ch_capacity-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 7.252237144216058e-05
+  buffer_size: 100000
+  batch_size: 1024
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.001
+  train_freq: 32
+  gradient_steps: 32
+  learning_starts: 0
+  policy_kwargs:
+    log_std_init: 0.448800043823388
+    net_arch: [64, 64]
+
+
+# Reward: geo mean SE
+MobilityCFmMIMOEnv-geo_mean_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00012521291646003295
+  buffer_size: 100000
+  batch_size: 1024
+  ent_coef: 'auto'
+  gamma: 0.98
+  tau: 0.01
+  train_freq: 1
+  gradient_steps: 1
+  learning_starts: 0
+  policy_kwargs:
+    log_std_init: -3.116854385927162
+    net_arch: [400, 300]
+
+
+# Reward: mean SE
+MobilityCFmMIMOEnv-mean_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 3.1093265583554554e-05
+  buffer_size: 100000
+  batch_size: 1024
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.005
+  train_freq: 16
+  gradient_steps: 16
+  learning_starts: 1000
+  policy_kwargs:
+    log_std_init: 0.601246704124134
+    net_arch: [64, 64]
+
+
+# Reward: min SE
+MobilityCFmMIMOEnv-min_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00031516137689410176
+  buffer_size: 1000000
+  batch_size: 256
+  ent_coef: 'auto'
+  gamma: 0.999
+  tau: 0.001
+  train_freq: 8
+  gradient_steps: 8
+  learning_starts: 10
+  policy_kwargs:
+    log_std_init: -3.7086057987131578
+    net_arch: [400, 300]
+
+
+# Reward: sum SE
+MobilityCFmMIMOEnv-sum_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1.0809083000775236e-05
+  buffer_size: 10000
+  batch_size: 128
+  ent_coef: 'auto'
+  gamma: 0.95
+  tau: 0.001
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 10
+  policy_kwargs:
+    log_std_init: -2.8033597511607065
+    net_arch: [256, 256]
