@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 import gymnasium as gym
 import numpy as np
@@ -128,6 +128,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info['signal'] = _updated_signal
         _info['interference'] = _updated_interference
         _info['predicted_power'] = _rescaled_action
+        _info['ues_positions'] = self.UEs_positions
 
         # Update the state
         self.state = _updated_Beta_K
@@ -226,8 +227,9 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         return _info
 
-    def maxmin_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
-                    lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+    def maxmin_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, ues_positions: np.ndarray,
+                    prelog_factor: float, lagging_spectral_efficiency: bool, pilot_index: Optional[np.ndarray] = None,
+                    beta_val: Optional[np.ndarray] = None) -> dict:
         # Method implementing the max-min power control algorithm
         _info = dict()
         _current_Beta_K = self.state
@@ -242,6 +244,8 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_spectral_efficiency:
+            if ues_positions is not None:
+                self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
                                                                                  self.max_power,
                                                                                  _opt_power, self.APs_positions,
@@ -257,8 +261,9 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         return _info
 
-    def maxprod_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
-                     lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+    def maxprod_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, ues_positions: np.ndarray,
+                     prelog_factor: float, lagging_spectral_efficiency: bool, pilot_index: Optional[np.ndarray] = None,
+                     beta_val: Optional[np.ndarray] = None) -> dict:
         # Method implementing the max-product SINR power control algorithm
         _info = dict()
         _, _opt_power = power_opt_prod_sinr(signal, interference, max_power, prelog_factor,
@@ -271,6 +276,8 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_spectral_efficiency:
+            if ues_positions is not None:
+                self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
                                                                                  self.max_power,
                                                                                  _opt_power, self.APs_positions,
@@ -286,8 +293,9 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         return _info
 
-    def maxsumrate_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, prelog_factor: float,
-                        lagging_spectral_efficiency: bool, pilot_index: np.ndarray, beta_val: np.ndarray) -> dict:
+    def maxsumrate_algo(self, signal: np.ndarray, interference: np.ndarray, max_power: float, ues_positions: np.ndarray,
+                        prelog_factor: float, lagging_spectral_efficiency: bool,
+                        pilot_index: Optional[np.ndarray] = None, beta_val: Optional[np.ndarray] = None) -> dict:
         # Method implementing the max-sum-rate power control algorithm
         _info = dict()
         _, _opt_power = power_opt_sum_rate(signal, interference, max_power, prelog_factor,
@@ -300,6 +308,8 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
 
         if not lagging_spectral_efficiency:
+            if ues_positions is not None:
+                self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
                                                                                  self.max_power,
                                                                                  _opt_power, self.APs_positions,
@@ -319,6 +329,35 @@ class MobilityCFmMIMOEnv(gym.Env):
         # Method to update user equipment positions based on mobility
         return random_waypoint(self.UEs_positions, self.area_bounds, sim_para.speed_range, sim_para.max_pause_time,
                                sim_para.time_step, sim_para.pause_prob)
+
+    def simulate(self, action, ues_positions) -> Tuple[np.ndarray, dict]:
+        # Step method implementation
+
+        # Adjust UL power based on action
+        _rescaled_action = ((action + 1) / 2) * (self.max_power - self.min_power) + self.min_power
+
+        self.UEs_power = _rescaled_action  # Action is the new UL power levels
+
+        if ues_positions is not None:
+            self.UEs_positions = ues_positions
+        else:
+            self.UEs_positions = self.update_ue_positions()
+
+        # Recalculate B_k based on the new UL power
+        _updated_Beta_K, _updated_signal, _updated_interference, _cf_spectral_efficiency = self.update_state()
+
+        # Additional info
+        _info = dict()
+
+        _info['signal'] = _updated_signal
+        _info['interference'] = _updated_interference
+        _info['predicted_power'] = _rescaled_action
+        _info['ues_positions'] = self.UEs_positions
+
+        # Update the state
+        self.state = _updated_Beta_K
+
+        return self.state, _info
 
     def close(self):
         pass
