@@ -4,12 +4,131 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="updated">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compare.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/compare.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="added">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/SAC-SGD-channel_capacity/MobilityCFmMIMOEnv_SAC_SGD_channel_capacity_20231230-2008.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/SAC-SGD-geo_mean_se/MobilityCFmMIMOEnv_SAC_SGD_geo_mean_se_20231230-2035.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/SAC-SGD-mean_se/MobilityCFmMIMOEnv_SAC_SGD_mean_se_20231230-1528.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/SAC-SGD-min_se/MobilityCFmMIMOEnv_SAC_SGD_min_se_20231230-2044.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/SAC-SGD-sum_se/MobilityCFmMIMOEnv_SAC_SGD_sum_se_20231230-2054.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/multi_model_generate_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/old models/PPO_CFmMIMO_Adam[128 256 128].zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/old models/PPO_CFmMIMO_SGD[128 256 128].zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/old models/SAC_CFmMIMO_SGD[MPS].zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_dbs/Adam/Mobility_CF-mMIMO_ch_cap.sqlite3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_dbs/SGD/MobilityCFmMIMOEnv.sqlite3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_1/best_model.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_1/evaluations.npz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_12/best_model.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_12/evaluations.npz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_14/best_model.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_14/evaluations.npz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_16/best_model.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optuna_logs/trial_16/evaluations.npz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxmin_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxmin_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxmin_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxprod_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxprod_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxprod_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_model_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_model_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_model_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_model_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_sumrate_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_sumrate_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_sumrate_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-channel_capacity/ch_cap_results_sumrate_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxmin_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxmin_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxmin_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxprod_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxprod_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxprod_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_model_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_model_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_model_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_model_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_sumrate_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_sumrate_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_sumrate_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-geo_mean_se/geo_mean_results_sumrate_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxmin_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxmin_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxmin_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxprod_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxprod_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxprod_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_model_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_model_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_model_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_model_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_sumrate_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_sumrate_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_sumrate_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-mean_se/mean_results_sumrate_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxmin_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxmin_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxmin_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxprod_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxprod_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxprod_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_model_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_model_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_model_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_model_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_sumrate_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_sumrate_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_sumrate_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-min_se/min_results_sumrate_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxmin_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxmin_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxmin_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxprod_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxprod_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxprod_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_model_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_model_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_model_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_model_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_sumrate_interferences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_sumrate_p.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_sumrate_se.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD-sum_se/sum_results_sumrate_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_ch_cap_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_ch_cap_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_ch_cap_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_geo_mean_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_geo_mean_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_geo_mean_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_mean_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_mean_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_mean_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_min_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_min_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_min_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_sum_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_sum_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/Model_sum_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxmin_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxmin_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxmin_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxprod_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxprod_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/maxprod_signals.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/sumrate_SEs.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/sumrate_powers.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results/SAC-SGD/sumrate_signals.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -285,55 +404,7 @@
       <workItem from="1703181927649" duration="35488000" />
       <workItem from="1703328522945" duration="12072000" />
       <workItem from="1703357821628" duration="6474000" />
-      <workItem from="1703365755633" duration="186863000" />
-    </task>
-    <task id="LOCAL-00046" summary="change reward to sum of spectral efficiency">
-      <option name="closed" value="true" />
-      <created>1703399845487</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1703399845487</updated>
-    </task>
-    <task id="LOCAL-00047" summary="remove unused imports">
-      <option name="closed" value="true" />
-      <created>1703399879362</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1703399879362</updated>
-    </task>
-    <task id="LOCAL-00048" summary="reformat">
-      <option name="closed" value="true" />
-      <created>1703399914165</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1703399914165</updated>
-    </task>
-    <task id="LOCAL-00049" summary="update">
-      <option name="closed" value="true" />
-      <created>1703399928923</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1703399928923</updated>
-    </task>
-    <task id="LOCAL-00050" summary="update">
-      <option name="closed" value="true" />
-      <created>1703475322850</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1703475322850</updated>
-    </task>
-    <task id="LOCAL-00051" summary="add">
-      <option name="closed" value="true" />
-      <created>1703475342011</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1703475342011</updated>
+      <workItem from="1703365755633" duration="187202000" />
     </task>
     <task id="LOCAL-00052" summary="add prelog_factor">
       <option name="closed" value="true" />
@@ -679,15 +750,61 @@
       <option name="project" value="LOCAL" />
       <updated>1704142175876</updated>
     </task>
-    <option name="localTasksCounter" value="95" />
+    <task id="LOCAL-00095" summary="updated">
+      <option name="closed" value="true" />
+      <created>1704142198206</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142198206</updated>
+    </task>
+    <task id="LOCAL-00096" summary="add simulation method">
+      <option name="closed" value="true" />
+      <created>1704142280384</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142280384</updated>
+    </task>
+    <task id="LOCAL-00097" summary="updated">
+      <option name="closed" value="true" />
+      <created>1704142295389</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142295389</updated>
+    </task>
+    <task id="LOCAL-00098" summary="add plot_cdf_pdf, compare_models, compare_cdfs_ks, determine_best_model_ks, compare_cdfs_emd, rank_models_emd, compare_cdfs_moments, rank_models_moments functions">
+      <option name="closed" value="true" />
+      <created>1704142391230</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142391230</updated>
+    </task>
+    <task id="LOCAL-00099" summary="update">
+      <option name="closed" value="true" />
+      <created>1704142401867</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142401867</updated>
+    </task>
+    <task id="LOCAL-00100" summary="added">
+      <option name="closed" value="true" />
+      <created>1704142509603</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1704142509603</updated>
+    </task>
+    <option name="localTasksCounter" value="101" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="remove unused imports" />
-    <MESSAGE value="add prelog_factor" />
     <MESSAGE value="use compute_se_np in reward calculation" />
     <MESSAGE value="add max_episode_steps during env registration" />
     <MESSAGE value="move" />
@@ -706,12 +823,14 @@
     <MESSAGE value="add" />
     <MESSAGE value="delete" />
     <MESSAGE value="reformat" />
-    <MESSAGE value="update" />
     <MESSAGE value="deleted" />
-    <MESSAGE value="added" />
     <MESSAGE value="moved" />
+    <MESSAGE value="add simulation method" />
     <MESSAGE value="updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated" />
+    <MESSAGE value="add plot_cdf_pdf, compare_models, compare_cdfs_ks, determine_best_model_ks, compare_cdfs_emd, rank_models_emd, compare_cdfs_moments, rank_models_moments functions" />
+    <MESSAGE value="update" />
+    <MESSAGE value="added" />
+    <option name="LAST_COMMIT_MESSAGE" value="added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
