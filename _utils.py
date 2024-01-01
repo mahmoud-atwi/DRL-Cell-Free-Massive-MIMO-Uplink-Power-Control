@@ -1,19 +1,22 @@
-import os
-import time
-import torch
-import socket
-import optuna
-import warnings
 import importlib
+import os
+import socket
 import subprocess
-import cvxpy as cp
-import numpy as np
+import time
+import warnings
+from typing import Any, Dict, List, Type, Optional, Union, Tuple
 
+import cvxpy as cp
+import matplotlib.pyplot as plt
+import numpy as np
+import optuna
+import pandas as pd
+import torch
 from scipy.linalg import sqrtm
-from stable_baselines3.common.vec_env import VecEnv
+from scipy.stats import gmean, stats
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
-from typing import Any, Dict, List, Type, Optional, Union, Tuple
+from stable_baselines3.common.vec_env import VecEnv
 
 warnings.simplefilter('error', RuntimeWarning)
 
@@ -430,3 +433,274 @@ def generate_ue_locations(num_ues: int, area_bounds: Tuple[float, float, float, 
     ue_locations.imag = np.random.uniform(y_min, y_max, num_ues)
 
     return ue_locations
+
+
+def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
+                 title: str, xlabel: Optional[str], operation: Optional[str], cumulative: bool) -> None:
+    """
+    Plot CDF or PDF for multiple models using matplotlib, with an optional operation applied across iterations.
+
+    :param data: A dictionary containing the data and plot settings for each model.
+    :param title: Title of the plot.
+    :param xlabel: Label for the x-axis.
+    :param operation: The operation to apply on the data (e.g., 'mean', 'max', 'gmean') across iterations.
+    :param cumulative: Whether to plot the CDF (True) or PDF (False).
+    """
+    operations = {
+        'min': np.min,
+        'max': np.max,
+        'mean': np.mean,
+        'sum': np.sum,
+        'gmean': gmean
+    }
+
+    if operation is not None and operation not in operations:
+        raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
+
+    plt.figure(figsize=(12, 6))
+
+    for key, info in data.items():
+        value = info['data']
+
+        if isinstance(value, (pd.DataFrame, pd.Series)):
+            value = value.to_numpy()
+
+        if operation is not None:
+            value = operations[operation](value, axis=0)  # Apply operation across iterations
+
+        if cumulative:
+            sorted_data = np.sort(value.flatten())
+            yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
+            plt.plot(sorted_data, yvals, label=info['label'], color=info.get('color'), linestyle=info.get('linestyle'),
+                     linewidth=info.get('linewidth'))
+        else:
+            bins = np.linspace(np.min(value), np.max(value), 30)
+            counts, bin_edges = np.histogram(value, bins=bins, density=True)
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            plt.plot(bin_centers, counts, label=info['label'], color=info.get('color'), linestyle=info.get('linestyle'),
+                     linewidth=info.get('linewidth'))
+
+    plt.xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
+    plt.ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def compare_models(models_data):
+    """
+    Compare multiple models based on their spectral efficiency.
+
+    :param models_data: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+                        keys.
+    :return: A DataFrame with comparison metrics for each model.
+    """
+    comparison_metrics = {}
+
+    for model_name, model_info in models_data.items():
+        se_values = model_info['data'].to_numpy().flatten()  # Assuming the data is a DataFrame
+
+        comparison_metrics[model_name] = {
+            'Label': model_info['label'],  # Include the label in the comparison
+            'Average SE': np.mean(se_values),
+            'Max SE': np.max(se_values),
+            'Standard Deviation': np.std(se_values),
+            '25th Percentile': np.percentile(se_values, 25),
+            '50th Percentile': np.percentile(se_values, 50),
+            '75th Percentile': np.percentile(se_values, 75),
+            'Geometric Mean': gmean(se_values)
+        }
+
+    return pd.DataFrame(comparison_metrics).T
+
+
+def compare_cdfs_ks(data_dict):
+    comparison_results = {}
+    keys = list(data_dict.keys())
+
+    # Pairwise KS Test
+    for i in range(len(keys)):
+        data_i = np.array(data_dict[keys[i]]['data']).flatten()
+
+        for j in range(i + 1, len(keys)):
+            data_j = np.array(data_dict[keys[j]]['data']).flatten()
+
+            ks_stat, ks_pvalue = stats.ks_2samp(data_i, data_j)
+            comparison_results[f'KS Test {data_dict[keys[i]]["label"]} vs {data_dict[keys[j]]["label"]}'] = {
+                'KS Statistic': ks_stat, 'P-Value': ks_pvalue}
+
+    # Area between CDFs
+    for i in range(len(keys)):
+        data_i = np.array(data_dict[keys[i]]['data']).flatten()
+
+        for j in range(i + 1, len(keys)):
+            data_j = np.array(data_dict[keys[j]]['data']).flatten()
+            sorted_i = np.sort(data_i)
+            sorted_j = np.sort(data_j)
+            cdf_i = np.arange(1, len(sorted_i) + 1) / len(sorted_i)
+            cdf_j = np.arange(1, len(sorted_j) + 1) / len(sorted_j)
+            area = np.trapz(np.abs(np.interp(sorted_j, sorted_i, cdf_i) - cdf_j), sorted_j)
+            comparison_results[f'Area Between {data_dict[keys[i]]["label"]} and {data_dict[keys[j]]["label"]}'] = area
+
+    best_model = determine_best_model_ks(comparison_results)
+
+    results = {
+        'Best Model': best_model,
+        'Comparison Results': comparison_results
+    }
+    return results
+
+
+def determine_best_model_ks(comparison_results):
+    ks_stats = {}
+    p_values = {}
+    areas = {}
+
+    for key, value in comparison_results.items():
+        if 'KS Test' in key:
+            model1, model2 = key.replace('KS Test ', '').split(' vs ')
+            ks_stat, p_value = value['KS Statistic'], value['P-Value']
+
+            ks_stats.setdefault(model1, []).append(ks_stat)
+            ks_stats.setdefault(model2, []).append(ks_stat)
+
+            p_values.setdefault(model1, []).append(p_value)
+            p_values.setdefault(model2, []).append(p_value)
+        elif 'Area Between' in key:
+            model1, model2 = key.replace('Area Between ', '').split(' and ')
+            area = value
+
+            areas.setdefault(model1, []).append(area)
+            areas.setdefault(model2, []).append(area)
+
+    # Average KS statistic and p-value for each model
+    avg_ks = {k: np.mean(v) for k, v in ks_stats.items()}
+    avg_p = {k: np.mean(v) for k, v in p_values.items()}
+    avg_area = {k: np.mean(v) for k, v in areas.items()}
+
+    # Determine best model based on criteria
+    best_model_ks = min(avg_ks, key=avg_ks.get)
+    best_model_p = max(avg_p, key=avg_p.get)
+    best_model_area = min(avg_area, key=avg_area.get)
+
+    return {
+        'Best Model by KS Statistic': best_model_ks,
+        'Best Model by P-Value': best_model_p,
+        'Best Model by Area': best_model_area
+    }
+
+
+def compare_cdfs_emd(data_dict: Dict[str, Dict[str, np.ndarray]]):
+    """
+    Compare multiple models based on Earth Mover's Distance (EMD).
+
+    :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+                      keys.
+    :return: A dictionary containing pairwise EMD comparison results.
+    """
+    comparison_results = {}
+    keys = list(data_dict.keys())
+
+    # Pairwise EMD comparison
+    for i in range(len(keys)):
+        data_i = np.array(data_dict[keys[i]]['data']).flatten()
+
+        for j in range(i + 1, len(keys)):
+            data_j = np.array(data_dict[keys[j]]['data']).flatten()
+            emd_value = stats.wasserstein_distance(data_i, data_j)
+            comparison_results[f'EMD {data_dict[keys[i]]["label"]} vs {data_dict[keys[j]]["label"]}'] = emd_value
+
+    best_model = rank_models_emd(comparison_results)
+
+    results = {
+        'Best Model': best_model,
+        'Comparison Results': comparison_results
+    }
+
+    return results
+
+
+def rank_models_emd(emd_results: Dict[str, float]) -> str:
+    """
+    Rank models from best to worst based on Earth Mover's Distance (EMD) and return a formatted string.
+
+    :param emd_results: A dictionary containing pairwise EMD comparison results.
+    :return: A formatted string with model names, ranked from best to worst.
+    """
+    # Initialize a dictionary to hold the sum of EMD values for each model
+    emd_sums = {}
+
+    # Process each comparison result
+    for comparison, emd_value in emd_results.items():
+        model1, model2 = comparison.replace('EMD ', '').split(' vs ')
+
+        # Add EMD value to both models involved in the comparison
+        emd_sums[model1] = emd_sums.get(model1, 0) + emd_value
+        emd_sums[model2] = emd_sums.get(model2, 0) + emd_value
+
+    # Calculate average EMD for each model
+    num_models = len(emd_sums)
+    avg_emd = {model: total_emd / (num_models - 1) for model, total_emd in emd_sums.items()}
+
+    # Sort models based on average EMD (lower is better)
+    sorted_models = sorted(avg_emd.items(), key=lambda x: x[1])
+
+    # Format the output
+    ranking_str = ", ".join([f"Rank {i + 1}: {model[0]}" for i, model in enumerate(sorted_models)])
+
+    return ranking_str
+
+
+def compare_cdfs_moments(data_dict: Dict[str, Dict[str, np.ndarray]]):
+    """
+    Compare multiple models based on statistical moments of their distributions.
+
+    :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+                      keys.
+    :return: A dictionary containing the statistical moments for each model.
+    """
+    moments_results = {}
+
+    for model_name, model_info in data_dict.items():
+        # Extract the data and flatten it to a 1D array
+        data = np.array(model_info['data']).flatten()
+
+        moments_results[model_name] = {
+            'Mean': np.mean(data),
+            'Variance': np.var(data),
+            'Skewness': stats.skew(data),
+            'Kurtosis': stats.kurtosis(data)
+        }
+
+    best_model = rank_models_moments(moments_results)
+
+    results = {
+        'Ranked Models': best_model,
+        'Comparison Results': moments_results
+    }
+
+    return results
+
+
+def rank_models_moments(moment_results: Dict[str, Dict[str, float]],
+                        criteria: str = 'mean') -> str:
+    """
+    Rank models from best to worst based on a specified statistical moment and return a formatted string.
+
+    :param moment_results: A dictionary containing the statistical moments for each model.
+    :param criteria: The criteria to determine the ranking ('mean', 'variance', 'skewness', 'kurtosis').
+    :return: A formatted string with model names, ranked from best to worst.
+    """
+    if criteria not in ['mean', 'variance', 'skewness', 'kurtosis']:
+        raise ValueError("Invalid criteria. Choose from 'mean', 'variance', 'skewness', 'kurtosis'.")
+
+    # Sort the models based on the specified moment
+    sorted_models = sorted(moment_results.items(),
+                           key=lambda x: x[1][criteria.capitalize()],
+                           reverse=(criteria == 'mean'))
+
+    # Format the output
+    ranking_str = ", ".join([f"Rank {i + 1}: {model[0]}" for i, model in enumerate(sorted_models)])
+
+    return ranking_str
