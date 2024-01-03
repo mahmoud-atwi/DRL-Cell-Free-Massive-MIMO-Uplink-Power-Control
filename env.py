@@ -189,6 +189,16 @@ class MobilityCFmMIMOEnv(gym.Env):
             # Calculate geometric mean
             geometric_mean = np.prod(SE) ** (1.0 / len(SE))
             return geometric_mean.astype(np.float32)
+        elif self.reward_method == "cf_min_se":
+            return np.min(cf_spectral_efficiency).astype(np.float32)
+        elif self.reward_method == "cf_mean_se":
+            return np.mean(cf_spectral_efficiency).astype(np.float32)
+        elif self.reward_method == "cf_geo_mean_se":
+            # Calculate geometric mean
+            geometric_mean = np.prod(cf_spectral_efficiency) ** (1.0 / len(cf_spectral_efficiency))
+            return geometric_mean.astype(np.float32)
+        elif self.reward_method == "cf_sum_se":
+            return np.sum(cf_spectral_efficiency).astype(np.float32)
         else:
             # fallback to min_se in case the reward_method provided is not supported and raise warning
             print("Warning: reward method not supported. Falling back to min_se.")
@@ -246,18 +256,20 @@ class MobilityCFmMIMOEnv(gym.Env):
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
-            _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                                                                 self.max_power,
-                                                                                 _opt_power, self.APs_positions,
-                                                                                 self.UEs_positions, self.square_length,
-                                                                                 self.decorr, self.sigma_sf,
-                                                                                 self.noise_variance_dbm, self.delta,
-                                                                                 pilot_index, beta_val)
+            _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
+                cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                   self.max_power,
+                                   _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length,
+                                   self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta,
+                                   pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
+            _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
 
         return _info
 
@@ -278,18 +290,20 @@ class MobilityCFmMIMOEnv(gym.Env):
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
-            _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                                                                 self.max_power,
-                                                                                 _opt_power, self.APs_positions,
-                                                                                 self.UEs_positions, self.square_length,
-                                                                                 self.decorr, self.sigma_sf,
-                                                                                 self.noise_variance_dbm, self.delta,
-                                                                                 pilot_index, beta_val)
+            _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
+                cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                   self.max_power,
+                                   _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length,
+                                   self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta,
+                                   pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
+            _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
 
         return _info
 
@@ -310,18 +324,20 @@ class MobilityCFmMIMOEnv(gym.Env):
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
-            _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                                                                 self.max_power,
-                                                                                 _opt_power, self.APs_positions,
-                                                                                 self.UEs_positions, self.square_length,
-                                                                                 self.decorr, self.sigma_sf,
-                                                                                 self.noise_variance_dbm, self.delta,
-                                                                                 pilot_index, beta_val)
+            _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
+                cf_mimo_simulation(self.L, self.K, self.tau_p,
+                                   self.max_power,
+                                   _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length,
+                                   self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta,
+                                   pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
+            _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
 
         return _info
 
@@ -353,6 +369,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info['interference'] = _updated_interference
         _info['predicted_power'] = _rescaled_action
         _info['ues_positions'] = self.UEs_positions
+        _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
 
         # Update the state
         self.state = _updated_Beta_K
