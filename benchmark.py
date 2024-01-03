@@ -210,6 +210,7 @@ class MultiModelBenchmark:
             'SEs': np.zeros((self.env.K, self.num_of_iterations)),
             'powers': np.zeros((self.env.K, self.num_of_iterations)),
             'signals': np.zeros((self.env.K, self.num_of_iterations)),
+            'cf_SEs': np.zeros((self.env.K, self.num_of_iterations)),
             # 'interferences': np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         } for model_name in self.models}
 
@@ -234,6 +235,10 @@ class MultiModelBenchmark:
         # self.maxmin_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         # self.maxprod_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         # self.sumrate_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
+
+        self.maxmin_cf_se = np.zeros((self.env.K, self.num_of_iterations))
+        self.maxprod_cf_se = np.zeros((self.env.K, self.num_of_iterations))
+        self.sumrate_cf_se = np.zeros((self.env.K, self.num_of_iterations))
 
         self.init_obs, self.init_info = self.env.reset()
         self.ues_positions = self.env.UEs_positions
@@ -278,6 +283,7 @@ class MultiModelBenchmark:
                                                                    info['predicted_power'], self.prelog_factor)
                 self.results[model_name]['powers'][:, i] = info['predicted_power']
                 self.results[model_name]['signals'][:, i] = info['signal']
+                self.results[model_name]['cf_SEs'][:, i] = info['cf_spectral_efficiency']
                 # self.results[model_name]['interferences'][:, :, i] = info['interference']
 
             if self.include_maxmin:
@@ -286,7 +292,7 @@ class MultiModelBenchmark:
                                                           None)
                 self.maxmin_signal = maxmin_info['signal']
                 self.maxmin_interference = maxmin_info['interference']
-
+                self.maxmin_cf_se[:, i] = maxmin_info['cf_spectral_efficiency']
                 self.maxmin_se[:, i] = compute_se(self.maxmin_signal, self.maxmin_interference,
                                                   maxmin_info['optimized_power'], self.prelog_factor)
 
@@ -300,7 +306,7 @@ class MultiModelBenchmark:
                                                              self.lagging_se, None, None)
                 self.maxprod_signal = maxprod_info['signal']
                 self.maxprod_interference = maxprod_info['interference']
-
+                self.maxprod_cf_se[:, i] = maxprod_info['cf_spectral_efficiency']
                 self.maxprod_se[:, i] = compute_se(self.maxprod_signal, self.maxprod_interference,
                                                    maxprod_info['optimized_power'], self.prelog_factor)
 
@@ -314,7 +320,7 @@ class MultiModelBenchmark:
                                                                 self.lagging_se, None, None)
                 self.sumrate_signal = sumrate_info['signal']
                 self.sumrate_interference = sumrate_info['interference']
-
+                self.sumrate_cf_se[:, i] = sumrate_info['cf_spectral_efficiency']
                 self.sumrate_se[:, i] = compute_se(self.sumrate_signal, self.sumrate_interference,
                                                    sumrate_info['optimized_power'], self.prelog_factor)
 
@@ -327,14 +333,17 @@ class MultiModelBenchmark:
             'maxmin_SEs': pd.DataFrame(self.maxmin_se),
             'maxmin_powers': pd.DataFrame(self.maxmin_p),
             'maxmin_signals': pd.DataFrame(self.maxmin_signals),
+            'maxmin_cf_SEs': pd.DataFrame(self.maxmin_cf_se),
             # 'maxmin_interferences': pd.DataFrame(self.maxmin_interferences.reshape(self.env.K, -1)),
             'maxprod_SEs': pd.DataFrame(self.maxprod_se),
             'maxprod_powers': pd.DataFrame(self.maxprod_p),
             'maxprod_signals': pd.DataFrame(self.maxprod_signals),
+            'maxprod_cf_SEs': pd.DataFrame(self.maxprod_cf_se),
             # 'maxprod_interferences': pd.DataFrame(self.maxprod_interferences.reshape(self.env.K, -1)),
             'sumrate_SEs': pd.DataFrame(self.sumrate_se),
             'sumrate_powers': pd.DataFrame(self.sumrate_p),
             'sumrate_signals': pd.DataFrame(self.sumrate_signals),
+            'sumrate_cf_SEs': pd.DataFrame(self.sumrate_cf_se),
             # 'sumrate_interferences': pd.DataFrame(self.sumrate_interferences.reshape(self.env.K, -1))
         }
 
@@ -345,36 +354,3 @@ class MultiModelBenchmark:
                 results_df[df_key] = pd.DataFrame(values.reshape(self.env.K, -1))
 
         return results_df
-
-
-if __name__ == '__main__':
-    algo_name = "SAC"
-    optim_name = "SGD"
-    reward_method = "channel_capacity"
-    models_dir = 'models'
-    models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-    model1_name = 'MobilityCFmMIMOEnv_SAC_SGD_channel_capacity_20231230-2008'
-    model_path = os.path.join(models_dir, models_folder, model1_name)
-    model_ch_cap = SAC.load(model_path)
-    model_A = copy.deepcopy(model_ch_cap)
-    model_B = copy.deepcopy(model_ch_cap)
-
-    _models = {
-        'Model A': model_A,
-        'Model B': model_B,
-    }
-
-    square_length = 1000
-    area_bounds = (0, square_length, 0, square_length)
-    APs_positions = generate_ap_locations(64, 100, area_bounds)
-    UEs_positions = generate_ue_locations(32, area_bounds)
-    _env = MobilityCFmMIMOEnv(APs_positions=APs_positions, UEs_positions=UEs_positions, UEs_mobility=True,
-                              reward_method='channel_capacity')
-    for k in _models:
-        print(k)
-    models_env = {model_name: copy.deepcopy(_env) for model_name in _models}
-
-    bm = MultiModelBenchmark(models=_models, env=_env, num_of_iterations=2, mobility=True)
-
-    _results_df = bm.run()
-    print(_results_df)
