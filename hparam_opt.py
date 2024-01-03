@@ -138,7 +138,7 @@ def hyperparameters_optimization(study_name, sampler_method, pruner_method, max_
     # Start the check-and-launch thread
 
     dashboard_thread = threading.Thread(target=check_and_launch_dashboard,
-                                        args=(os.path.dirname(os.path.realpath(__file__)), storage_url, 90))
+                                        args=(os.path.dirname(os.path.realpath(__file__)), storage_url, 9000))
     dashboard_thread.start()
 
     try:
@@ -200,11 +200,11 @@ if __name__ == "__main__":
     config = {
         "algo": "SAC",
         "policy_type": "MlpPolicy",
-        "total_timesteps": 10000,
+        "total_timesteps": 1000,
         "max_episode_steps": 10,
         "env_id": "env/MobilityCFmMIMOEnv-v0",
         "env_name": 'MobilityCFmMIMOEnv',
-        "reward_method": "channel_capacity",
+        "reward_method": "cf_sum_se",
     }
 
     register(id=config["env_id"], entry_point="env:MobilityCFmMIMOEnv", max_episode_steps=config["max_episode_steps"], )
