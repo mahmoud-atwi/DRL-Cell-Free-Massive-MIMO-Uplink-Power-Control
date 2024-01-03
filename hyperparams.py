@@ -29,7 +29,7 @@ def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
     # You can comment that out when not using gSDE
     log_std_init = trial.suggest_float("log_std_init", -4, 1)
     # NOTE: Add "verybig" to net_arch when tuning HER
-    net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "big"])
+    net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "big", 'large', 'mixed'])
     # activation_fn = trial.suggest_categorical('activation_fn', [nn.Tanh, nn.ReLU, nn.ELU, nn.LeakyReLU])
 
     net_arch = {
