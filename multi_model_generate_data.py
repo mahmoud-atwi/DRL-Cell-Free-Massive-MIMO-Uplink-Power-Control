@@ -21,6 +21,7 @@ UEs_positions = generate_ue_locations(K, area_bounds)
 
 algo_name = "SAC"
 optim_name = "SGD"
+
 reward_method = "channel_capacity"
 models_dir = 'models'
 models_folder = f'{algo_name}-{optim_name}-{reward_method}'
@@ -69,11 +70,10 @@ results = bm.run(show_progress=True)
 
 for key, value in results.items():
     algo_name = "SAC"
-    optim_name = "SGD"
+    optim_name = "SGD_with_cf_se"
     results_dir = 'results'
     results_folder = f'{algo_name}-{optim_name}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{key}.csv'
     file = os.path.join(results_dir, results_folder, file_name)
     results[key].to_csv(file)
-
