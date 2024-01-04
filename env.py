@@ -79,6 +79,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         self.area_bounds = (0, self.square_length, 0, self.square_length)
         self.reward_method = kwargs.get('reward_method', None)
         self.temporal_reward_method = kwargs.get('temporal_reward_method', None)
+        self.eval = kwargs.get('eval', False)
 
         # raise error if both reward_method and temporal_reward_method are provided
         if self.reward_method and self.temporal_reward_method:
@@ -96,7 +97,6 @@ class MobilityCFmMIMOEnv(gym.Env):
                     6) cf_min_se
                     7) cf_mean_se
                     8) cf_sum_se
-                
                 temporal_reward_method options:
                     1) delta
                     2) relative
@@ -108,8 +108,9 @@ class MobilityCFmMIMOEnv(gym.Env):
             )
 
         methods = ["delta", "relative", "exp_delta_clip", "exp_relative_clip", "log_delta", "log_relative"]
-        if self.temporal_reward_method not in methods:
-            raise ValueError(f"Invalid temporal reward method. select one of: {methods}")
+        if not self.eval:
+            if self.temporal_reward_method not in methods:
+                raise ValueError(f"Invalid temporal reward method. select one of: {methods}")
 
         # Temporal parameters
         self.temporal_reward_operation = kwargs.get('temporal_reward_operation', 'mean')
