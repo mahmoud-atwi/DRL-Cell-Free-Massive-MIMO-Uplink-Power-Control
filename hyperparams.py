@@ -27,17 +27,17 @@ def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
     # ent_coef = trial.suggest_categorical('ent_coef', ['auto', 0.5, 0.1, 0.05, 0.01, 0.0001])
     ent_coef = "auto"
     # You can comment that out when not using gSDE
-    log_std_init = trial.suggest_float("log_std_init", -4, 1)
+    # log_std_init = trial.suggest_float("log_std_init", -4, 1)
     # NOTE: Add "verybig" to net_arch when tuning HER
-    net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "big", 'large', 'mixed'])
+    net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "big", 'mixed', 'large'])
     # activation_fn = trial.suggest_categorical('activation_fn', [nn.Tanh, nn.ReLU, nn.ELU, nn.LeakyReLU])
 
     net_arch = {
         "small": [64, 64],
         "medium": [256, 256],
         "big": [400, 300],
-        "large": [256, 256, 256],
         "mixed": [128, 256, 128],
+        "large": [256, 256, 256],
         # "verybig": [512, 512, 512],
     }[net_arch_type]
 
@@ -66,7 +66,7 @@ def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
         "ent_coef": ent_coef,
         "tau": tau,
         "target_entropy": target_entropy,
-        "policy_kwargs": dict(optimizer_class=OPTIMIZER, log_std_init=log_std_init, net_arch=net_arch),
+        "policy_kwargs": dict(optimizer_class=OPTIMIZER, net_arch=net_arch),
     }
 
     return hyperparams
