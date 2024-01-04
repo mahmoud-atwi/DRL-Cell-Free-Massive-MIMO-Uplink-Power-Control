@@ -1,76 +1,52 @@
 import os
-import sys
 
 from stable_baselines3 import SAC
-from torch import cuda
-from torch.backends import mps
 
-from _utils import generate_ap_locations, generate_ue_locations
-from benchmark import Benchmark, MultiModelBenchmark
 from env import MobilityCFmMIMOEnv
+from benchmark import MultiModelBenchmark
 from simulation_para import L, K, square_length
-
-if sys.platform == 'darwin':  # Check if macOS
-    device = "mps" if mps.is_available() else "cpu"
-else:
-    device = "cuda" if cuda.is_available() else "cpu"
+from _utils import generate_ap_locations, generate_ue_locations
 
 area_bounds = (0, square_length, 0, square_length)
 APs_positions = generate_ap_locations(L, 100, area_bounds)
 UEs_positions = generate_ue_locations(K, area_bounds)
 
+models_dir = 'models'
+models_folder = 'MODEL_SAC_SGD_10k'
 algo_name = "SAC"
 optim_name = "SGD"
 
-reward_method = "channel_capacity"
-models_dir = 'models'
-models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-model1_name = 'MobilityCFmMIMOEnv_SAC_SGD_channel_capacity_20231230-2008'
-model_path = os.path.join(models_dir, models_folder, model1_name)
-model_ch_cap = SAC.load(model_path)
-
-reward_method = "geo_mean_se"
-models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-model2_name = 'MobilityCFmMIMOEnv_SAC_SGD_geo_mean_se_20231230-2035'
-model_path = os.path.join(models_dir, models_folder, model2_name)
-model_geo_mean = SAC.load(model_path)
-
-reward_method = "mean_se"
-models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-model2_name = 'MobilityCFmMIMOEnv_SAC_SGD_mean_se_20231230-1528'
-model_path = os.path.join(models_dir, models_folder, model2_name)
-model_mean = SAC.load(model_path)
-
-reward_method = "min_se"
-models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-model4_name = 'MobilityCFmMIMOEnv_SAC_SGD_min_se_20231230-2044'
-model_path = os.path.join(models_dir, models_folder, model4_name)
-model_min = SAC.load(model_path)
-
-reward_method = "sum_se"
-models_folder = f'{algo_name}-{optim_name}-{reward_method}'
-model5_name = 'MobilityCFmMIMOEnv_SAC_SGD_sum_se_20231230-2054'
-model_path = os.path.join(models_dir, models_folder, model5_name)
-model_sum = SAC.load(model_path)
-
-env = MobilityCFmMIMOEnv(APs_positions=APs_positions, UEs_positions=UEs_positions, UEs_mobility=True)
-
 models_dict = {
-    'Model_ch_cap': model_ch_cap,
-    'Model_geo_mean': model_geo_mean,
-    'Model_mean': model_mean,
-    'Model_min': model_min,
-    'Model_sum': model_sum
+    'MODEL_DELTA_SE': 'MODEL_SAC_SGD_DELTA_CF_SE_202401050057',
+    'MODEL_EXP_DELTA_CLIP_SEv0': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_CF_SE_202401050105V0',
+    'MODEL_EXP_DELTA_CLIP_SEv1': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_CF_SE_202401050113V1',
+    'MODEL_LOG_DELTA_SE': 'MODEL_SAC_SGD_LOG_DELTA_CF_SE_202401050126',
+    'MODEL_RELATIVE_SE': 'MODEL_SAC_SGD_RELATIVE_CF_SE_202401050139',
+    'MODEL_EXP_RELATIVE_CLIP_SE': 'MODEL_SAC_SGD_EXP_RELATIVE_CLIP_CF_SE_202401050152',
+    'MODEL_LOG_RELATIVE_SE': 'MODEL_SAC_SGD_LOG_RELATIVE_CF_SE_202401050200',
+    'MODEL_DELTA_SINR': 'MODEL_SAC_SGD_DELTA_SINR_202401050208',
+    'MODEL_EXP_DELTA_CLIP_SINR': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_SINR_202401050217',
+    'MODEL_LOG_DELTA_SINR': 'MODEL_SAC_SGD_LOG_DELTA_SINR_202401050225',
+    'MODEL_RELATIVE_SINR': 'MODEL_SAC_SGD_RELATIVE_SINR_202401050237',
+    'MODEL_EXP_RELATIVE_CLIP_SINR': 'MODEL_SAC_SGD_EXP_RELATIVE_CLIP_SINR_202401050309',
+    'MODEL_LOG_RELATIVE_SINR': 'MODEL_SAC_SGD_LOG_RELATIVE_SINR_202401050300'
 }
 
-bm = MultiModelBenchmark(models=models_dict, env=env, num_of_iterations=1000, mobility=True)
+for key, value in models_dict.items():
+    model_name = value
+    model_path = os.path.join(models_dir, models_folder, model_name)
+    models_dict[key] = SAC.load(model_path)
 
+
+env = MobilityCFmMIMOEnv(APs_positions=APs_positions, UEs_positions=UEs_positions, UEs_mobility=True, eval=True)
+
+bm = MultiModelBenchmark(models=models_dict, env=env, num_of_iterations=10000, mobility=True)
 
 results = bm.run(show_progress=True)
 
 for key, value in results.items():
     algo_name = "SAC"
-    optim_name = "SGD_with_cf_se"
+    optim_name = "SGD"
     results_dir = 'results'
     results_folder = f'{algo_name}-{optim_name}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
