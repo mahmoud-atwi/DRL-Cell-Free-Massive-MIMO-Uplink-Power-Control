@@ -1,15 +1,11 @@
 import copy
-import os
 from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
-from stable_baselines3 import SAC
 from tqdm import tqdm
 
-from _utils import generate_ap_locations, generate_ue_locations
 from compute_spectral_efficiency import compute_se
-from env import MobilityCFmMIMOEnv
 
 
 # create class for benchmarking
@@ -208,10 +204,10 @@ class MultiModelBenchmark:
 
         self.results = {model_name: {
             'SEs': np.zeros((self.env.K, self.num_of_iterations)),
-            'powers': np.zeros((self.env.K, self.num_of_iterations)),
-            'signals': np.zeros((self.env.K, self.num_of_iterations)),
-            'cf_SEs': np.zeros((self.env.K, self.num_of_iterations)),
-            # 'interferences': np.zeros((self.env.K, self.env.K, self.num_of_iterations))
+            'POWERS': np.zeros((self.env.K, self.num_of_iterations)),
+            'SIGNALS': np.zeros((self.env.K, self.num_of_iterations)),
+            'CF_SEs': np.zeros((self.env.K, self.num_of_iterations)),
+            # 'INTERFERENCEs': np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         } for model_name in self.models}
 
         self.models_env = {model_name: copy.deepcopy(self.env) for model_name in self.models}
@@ -220,25 +216,25 @@ class MultiModelBenchmark:
         self.maxprod_env = copy.deepcopy(self.env)
         self.sumrate_env = copy.deepcopy(self.env)
 
-        self.maxmin_p = np.zeros((self.env.K, self.num_of_iterations))
-        self.maxprod_p = np.zeros((self.env.K, self.num_of_iterations))
-        self.sumrate_p = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXMIN_POWERs = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXPROD_POWERs = np.zeros((self.env.K, self.num_of_iterations))
+        self.SUMRATE_POWERs = np.zeros((self.env.K, self.num_of_iterations))
 
-        self.maxmin_se = np.zeros((self.env.K, self.num_of_iterations))
-        self.maxprod_se = np.zeros((self.env.K, self.num_of_iterations))
-        self.sumrate_se = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXMIN_SEs = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXPROD_SEs = np.zeros((self.env.K, self.num_of_iterations))
+        self.SUMRATE_SEs = np.zeros((self.env.K, self.num_of_iterations))
 
-        self.maxmin_signals = np.zeros((self.env.K, self.num_of_iterations))
-        self.maxprod_signals = np.zeros((self.env.K, self.num_of_iterations))
-        self.sumrate_signals = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXMIN_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXPROD_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
+        self.SUMRATE_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
 
-        # self.maxmin_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
-        # self.maxprod_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
-        # self.sumrate_interferences = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
+        # self.MAXMIN_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
+        # self.MAXPROD_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
+        # self.SUMRATE_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
 
-        self.maxmin_cf_se = np.zeros((self.env.K, self.num_of_iterations))
-        self.maxprod_cf_se = np.zeros((self.env.K, self.num_of_iterations))
-        self.sumrate_cf_se = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXMIN_CF_SEs = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXPROD_CF_SEs = np.zeros((self.env.K, self.num_of_iterations))
+        self.SUMRATE_CF_SEs = np.zeros((self.env.K, self.num_of_iterations))
 
         self.init_obs, self.init_info = self.env.reset()
         self.ues_positions = self.env.UEs_positions
@@ -278,73 +274,80 @@ class MultiModelBenchmark:
 
             for model_name, model in self.models.items():
                 action, _ = model.predict(self.obs[model_name], deterministic=True)
-                self.obs[model_name], info = self.models_env[model_name].simulate(action=action, ues_positions=None)
+                self.obs[model_name], info = self.models_env[model_name].simulate(action=action,
+                                                                                  ues_positions=self.ues_positions)
                 self.results[model_name]['SEs'][:, i] = compute_se(info['signal'], info['interference'],
                                                                    info['predicted_power'], self.prelog_factor)
-                self.results[model_name]['powers'][:, i] = info['predicted_power']
-                self.results[model_name]['signals'][:, i] = info['signal']
-                self.results[model_name]['cf_SEs'][:, i] = info['cf_spectral_efficiency']
-                # self.results[model_name]['interferences'][:, :, i] = info['interference']
+                self.results[model_name]['POWERS'][:, i] = info['predicted_power']
+                self.results[model_name]['SIGNALS'][:, i] = info['signal']
+                self.results[model_name]['CF_SEs'][:, i] = info['cf_spectral_efficiency']
+                # self.results[model_name]['INTERFERENCEs'][:, :, i] = info['interference']
 
             if self.include_maxmin:
                 maxmin_info = self.maxmin_env.maxmin_algo(self.maxmin_signal, self.maxmin_interference, self.max_power,
                                                           self.ues_positions, self.prelog_factor, self.lagging_se, None,
                                                           None)
+
                 self.maxmin_signal = maxmin_info['signal']
                 self.maxmin_interference = maxmin_info['interference']
-                self.maxmin_cf_se[:, i] = maxmin_info['cf_spectral_efficiency']
-                self.maxmin_se[:, i] = compute_se(self.maxmin_signal, self.maxmin_interference,
-                                                  maxmin_info['optimized_power'], self.prelog_factor)
 
-                self.maxmin_p[:, i] = maxmin_info['optimized_power']
-                self.maxmin_signals[:, i] = maxmin_info['signal']
-                # self.maxmin_interferences[:, :, i] = maxmin_info['interference']
+                self.MAXMIN_CF_SEs[:, i] = maxmin_info['cf_spectral_efficiency']
+                self.MAXMIN_SEs[:, i] = compute_se(self.maxmin_signal, self.maxmin_interference,
+                                                   maxmin_info['optimized_power'], self.prelog_factor)
+
+                self.MAXMIN_POWERs[:, i] = maxmin_info['optimized_power']
+                self.MAXMIN_SIGNALs[:, i] = maxmin_info['signal']
+                # self.MAXMIN_INTERFERENCEs[:, :, i] = maxmin_info['interference']
 
             if self.include_maxprod:
                 maxprod_info = self.maxprod_env.maxprod_algo(self.maxprod_signal, self.maxprod_interference,
                                                              self.max_power, self.ues_positions, self.prelog_factor,
                                                              self.lagging_se, None, None)
+
                 self.maxprod_signal = maxprod_info['signal']
                 self.maxprod_interference = maxprod_info['interference']
-                self.maxprod_cf_se[:, i] = maxprod_info['cf_spectral_efficiency']
-                self.maxprod_se[:, i] = compute_se(self.maxprod_signal, self.maxprod_interference,
-                                                   maxprod_info['optimized_power'], self.prelog_factor)
 
-                self.maxprod_p[:, i] = maxprod_info['optimized_power']
-                self.maxprod_signals[:, i] = maxprod_info['signal']
-                # self.maxprod_interferences[:, :, i] = maxprod_info['interference']
+                self.MAXPROD_CF_SEs[:, i] = maxprod_info['cf_spectral_efficiency']
+                self.MAXPROD_SEs[:, i] = compute_se(self.maxprod_signal, self.maxprod_interference,
+                                                    maxprod_info['optimized_power'], self.prelog_factor)
+
+                self.MAXPROD_POWERs[:, i] = maxprod_info['optimized_power']
+                self.MAXPROD_SIGNALs[:, i] = maxprod_info['signal']
+                # self.MAXPROD_INTERFERENCEs[:, :, i] = maxprod_info['interference']
 
             if self.include_sumrate:
                 sumrate_info = self.sumrate_env.maxsumrate_algo(self.sumrate_signal, self.sumrate_interference,
                                                                 self.max_power, self.ues_positions, self.prelog_factor,
                                                                 self.lagging_se, None, None)
+
                 self.sumrate_signal = sumrate_info['signal']
                 self.sumrate_interference = sumrate_info['interference']
-                self.sumrate_cf_se[:, i] = sumrate_info['cf_spectral_efficiency']
-                self.sumrate_se[:, i] = compute_se(self.sumrate_signal, self.sumrate_interference,
-                                                   sumrate_info['optimized_power'], self.prelog_factor)
 
-                self.sumrate_p[:, i] = sumrate_info['optimized_power']
-                self.sumrate_signals[:, i] = sumrate_info['signal']
-                # self.sumrate_interferences[:, :, i] = sumrate_info['interference']
+                self.SUMRATE_CF_SEs[:, i] = sumrate_info['cf_spectral_efficiency']
+                self.SUMRATE_SEs[:, i] = compute_se(self.sumrate_signal, self.sumrate_interference,
+                                                    sumrate_info['optimized_power'], self.prelog_factor)
+
+                self.SUMRATE_POWERs[:, i] = sumrate_info['optimized_power']
+                self.SUMRATE_SIGNALs[:, i] = sumrate_info['signal']
+                # self.SUMRATE_INTERFERENCEs[:, :, i] = sumrate_info['interference']
 
         # Convert results to Pandas DataFrames
         results_df = {
-            'maxmin_SEs': pd.DataFrame(self.maxmin_se),
-            'maxmin_powers': pd.DataFrame(self.maxmin_p),
-            'maxmin_signals': pd.DataFrame(self.maxmin_signals),
-            'maxmin_cf_SEs': pd.DataFrame(self.maxmin_cf_se),
-            # 'maxmin_interferences': pd.DataFrame(self.maxmin_interferences.reshape(self.env.K, -1)),
-            'maxprod_SEs': pd.DataFrame(self.maxprod_se),
-            'maxprod_powers': pd.DataFrame(self.maxprod_p),
-            'maxprod_signals': pd.DataFrame(self.maxprod_signals),
-            'maxprod_cf_SEs': pd.DataFrame(self.maxprod_cf_se),
-            # 'maxprod_interferences': pd.DataFrame(self.maxprod_interferences.reshape(self.env.K, -1)),
-            'sumrate_SEs': pd.DataFrame(self.sumrate_se),
-            'sumrate_powers': pd.DataFrame(self.sumrate_p),
-            'sumrate_signals': pd.DataFrame(self.sumrate_signals),
-            'sumrate_cf_SEs': pd.DataFrame(self.sumrate_cf_se),
-            # 'sumrate_interferences': pd.DataFrame(self.sumrate_interferences.reshape(self.env.K, -1))
+            'MAXMIN_SEs': pd.DataFrame(self.MAXMIN_SEs),
+            'MAXMIN_POWERs': pd.DataFrame(self.MAXMIN_POWERs),
+            'MAXMIN_SIGNALs': pd.DataFrame(self.MAXMIN_SIGNALs),
+            'MAXMIN_CF_SEs': pd.DataFrame(self.MAXMIN_CF_SEs),
+            # 'MAXMIN_INTERFERENCEs': pd.DataFrame(self.MAXMIN_INTERFERENCEs.reshape(self.env.K, -1)),
+            'MAXPROD_SEs': pd.DataFrame(self.MAXPROD_SEs),
+            'MAXPROD_POWERs': pd.DataFrame(self.MAXPROD_POWERs),
+            'MAXPROD_SIGNALs': pd.DataFrame(self.MAXPROD_SIGNALs),
+            'MAXPROD_CF_SEs': pd.DataFrame(self.MAXPROD_CF_SEs),
+            # 'MAXPROD_INTERFERENCEs': pd.DataFrame(self.MAXPROD_INTERFERENCEs.reshape(self.env.K, -1)),
+            'SUMRATE_SEs': pd.DataFrame(self.SUMRATE_SEs),
+            'SUMRATE_POWERs': pd.DataFrame(self.SUMRATE_POWERs),
+            'SUMRATE_SIGNALs': pd.DataFrame(self.SUMRATE_SIGNALs),
+            'SUMRATE_CF_SEs': pd.DataFrame(self.SUMRATE_CF_SEs),
+            # 'SUMRATE_INTERFERENCEs': pd.DataFrame(self.SUMRATE_INTERFERENCEs.reshape(self.env.K, -1))
         }
 
         # Add results from predictive models
