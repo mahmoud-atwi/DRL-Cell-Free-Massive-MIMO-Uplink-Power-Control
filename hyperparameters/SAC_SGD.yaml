@@ -13,6 +13,7 @@ MobilityCFmMIMOEnv-ch_capacity-v0:
   gradient_steps: 32
   learning_starts: 0
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: 0.448800043823388
     net_arch: [64, 64]
 
@@ -30,6 +31,7 @@ MobilityCFmMIMOEnv-geo_mean_se-v0:
   gradient_steps: 1
   learning_starts: 0
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: -3.116854385927162
     net_arch: [400, 300]
 
@@ -47,6 +49,7 @@ MobilityCFmMIMOEnv-mean_se-v0:
   gradient_steps: 16
   learning_starts: 1000
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: 0.601246704124134
     net_arch: [64, 64]
 
@@ -64,6 +67,7 @@ MobilityCFmMIMOEnv-min_se-v0:
   gradient_steps: 8
   learning_starts: 10
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: -3.7086057987131578
     net_arch: [400, 300]
 
@@ -81,6 +85,7 @@ MobilityCFmMIMOEnv-sum_se-v0:
   gradient_steps: 4
   learning_starts: 10
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: -2.8033597511607065
     net_arch: [256, 256]
 
@@ -97,6 +102,7 @@ MobilityCFmMIMOEnv-cf_min_se-v0:
   gradient_steps: 512
   learning_starts: 10
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: 0.6318348523226943
     net_arch: [64, 64]
 
@@ -114,5 +120,234 @@ MobilityCFmMIMOEnv-cf_mean_se-v0:
   gradient_steps: 32
   learning_starts: 100
   policy_kwargs:
+    optimizer_class: 'SGD'
     log_std_init: -3.6204042005595283
     net_arch: [256, 256]
+
+
+# Reward: CF SUM SE
+MobilityCFmMIMOEnv-cf_sum_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 2.092844912932121e-05
+  buffer_size: 10000
+  batch_size: 1024
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.005
+  train_freq: 1
+  gradient_steps: 1
+  learning_starts: 0
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    log_std_init: -0.5300596284029943
+    net_arch: [256, 256]
+
+############################################################################################################
+# Temporal Reward: Mean Delta CF SE
+MobilityCFmMIMOEnv-delta_cf_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 5.8516834443134856e-05
+  buffer_size: 1000000
+  batch_size: 16
+  ent_coef: 'auto'
+  gamma: 0.9999
+  tau: 0.01
+  train_freq: 1
+  gradient_steps: 1
+  learning_starts: 0
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [128, 256, 128]
+
+# Temporal Reward: Mean Exponential Delta CF SE (Clipped)
+MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00017012632878747388
+  buffer_size: 100000
+  batch_size: 64
+  ent_coef: 'auto'
+  gamma: 0.98
+  tau: 0.001
+  train_freq: 32
+  gradient_steps: 32
+  learning_starts: 100
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [128, 256, 128]
+
+# Temporal Reward: Mean Exponential Delta CF SE (Clipped) [Note: this is the same as exp_delta_clip-v0 but reward achieved is higher]
+MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v1:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1.2946781982248717e-05
+  buffer_size: 10000
+  batch_size: 64
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.001
+  train_freq: 64
+  gradient_steps: 64
+  learning_starts: 100
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
+
+# Temporal Reward: Mean Logarithmic Delta CF SE
+MobilityCFmMIMOEnv-log_delta_cf_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 5.1847811110271254e-05
+  buffer_size: 10000
+  batch_size: 64
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.08
+  train_freq: 32
+  gradient_steps: 32
+  learning_starts: 100
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [64, 64]
+
+# Temporal Reward: Mean Relative CF SE
+MobilityCFmMIMOEnv-relative_cf_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00029685736391980427
+  buffer_size: 100000
+  batch_size: 1024
+  ent_coef: 'auto'
+  gamma: 0.9999
+  tau: 0.05
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 1000
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [400, 300]
+
+# Temporal Reward: Mean Exponential Relative CF SE (Clipped)
+MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1.5024920362986287e-05
+  buffer_size: 100000
+  batch_size: 2048
+  ent_coef: 'auto'
+  gamma: 0.999
+  tau: 0.005
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 10
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [64, 64]
+
+# Temporal Reward: Mean Logarithmic Relative CF SE
+MobilityCFmMIMOEnv-log_relative_cf_se-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1.7809571499408265e-05
+  buffer_size: 1000000
+  batch_size: 16
+  ent_coef: 'auto'
+  gamma: 0.9999
+  tau: 0.05
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 1000
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
+
+############################################################################################################
+# Temporal Reward: Mean Delta SINR
+MobilityCFmMIMOEnv-delta_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 4.557612711685732e-05
+  buffer_size: 10000
+  batch_size: 128
+  ent_coef: 'auto'
+  gamma: 0.95
+  tau: 0.05
+  train_freq: 1
+  gradient_steps: 1
+  learning_starts: 1000
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [128, 256, 128]
+
+# Temporal Reward: Mean Exponential Delta SINR (Clipped)
+MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.005837617595960289
+  buffer_size: 10000
+  batch_size: 512
+  ent_coef: 'auto'
+  gamma: 0.95
+  tau: 0.05
+  train_freq: 8
+  gradient_steps: 8
+  learning_starts: 10
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256]
+
+# Temporal Reward: Mean Logarithmic Delta SINR
+MobilityCFmMIMOEnv-log_delta_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 2.2520183783275966e-05
+  buffer_size: 100000
+  batch_size: 512
+  ent_coef: 'auto'
+  gamma: 0.999
+  tau: 0.001
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 10
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [400, 300]
+
+# Temporal Reward: Mean Relative SINR
+MobilityCFmMIMOEnv-relative_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 8.759523686015748e-05
+  buffer_size: 100000
+  batch_size: 2048
+  ent_coef: 'auto'
+  gamma: 0.995
+  tau: 0.05
+  train_freq: 64
+  gradient_steps: 64
+  learning_starts: 1000
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256]
+
+# Temporal Reward: Mean Exponential Relative SINR (Clipped)
+MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 3.6122014294500314e-05
+  buffer_size: 100000
+  batch_size: 128
+  ent_coef: 'auto'
+  gamma: 0.9999
+  tau: 0.02
+  train_freq: 4
+  gradient_steps: 4
+  learning_starts: 10
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256]
+
+# Temporal Reward: Mean Logarithmic Relative SINR
+MobilityCFmMIMOEnv-log_relative_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 5.435792240125216e-05
+  buffer_size: 1000000
+  batch_size: 32
+  ent_coef: 'auto'
+  gamma: 0.999
+  tau: 0.05
+  train_freq: 512
+  gradient_steps: 512
+  learning_starts: 1000
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
