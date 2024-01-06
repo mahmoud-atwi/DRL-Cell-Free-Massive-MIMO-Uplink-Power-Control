@@ -532,7 +532,7 @@ def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
 
 def compare_cdfs_ks(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
                     operation: Optional[str] = None):
-    comparison_results = {}
+    comparison_data = []
     keys = list(data_dict.keys())
 
     operations = {
@@ -546,71 +546,65 @@ def compare_cdfs_ks(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Dat
     if operation is not None and operation not in operations:
         raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
 
-    # Pairwise KS Test
+    # Pairwise KS Test and Area between CDFs
     for i in range(len(keys)):
-        data_i = data_dict[keys[i]]['data'].to_numpy()
-        if operation is not None:
-            data_i = operations[operation](data_i, axis=0)  # Apply operation across iterations
-        data_i = data_i.flatten()
         for j in range(i + 1, len(keys)):
-            data_j = data_dict[keys[j]]['data'].to_numpy()
-            if operation is not None:
-                data_j = operations[operation](data_i, axis=0)  # Apply operation across iterations
-            data_j = data_j.flatten()
-            ks_stat, ks_pvalue = stats.ks_2samp(data_i, data_j)
-            comparison_results[f'KS Test {data_dict[keys[i]]["label"]} vs {data_dict[keys[j]]["label"]}'] = {
-                'KS Statistic': ks_stat, 'P-Value': ks_pvalue}
+            # Extract and process data
+            data_i = data_dict[keys[i]]['data'].to_numpy().flatten()
+            data_j = data_dict[keys[j]]['data'].to_numpy().flatten()
 
-    # Area between CDFs
-    for i in range(len(keys)):
-        data_i = data_dict[keys[i]]['data'].to_numpy()
-        if operation is not None:
-            data_i = operations[operation](data_i, axis=0)  # Apply operation across iterations
-        data_i = data_i.flatten()
-        for j in range(i + 1, len(keys)):
-            data_j = data_dict[keys[j]]['data'].to_numpy()
+            # Apply operation if specified
             if operation is not None:
-                data_j = operations[operation](data_i, axis=0)  # Apply operation across iterations
-            data_j = data_j.flatten()
+                data_i = operations[operation](data_i, axis=0)
+                data_j = operations[operation](data_j, axis=0)
+
+            # KS Test
+            ks_stat, ks_pvalue = stats.ks_2samp(data_i, data_j)
+
+            # Area between CDFs
             sorted_i = np.sort(data_i)
             sorted_j = np.sort(data_j)
             cdf_i = np.arange(1, len(sorted_i) + 1) / len(sorted_i)
             cdf_j = np.arange(1, len(sorted_j) + 1) / len(sorted_j)
             area = np.trapz(np.abs(np.interp(sorted_j, sorted_i, cdf_i) - cdf_j), sorted_j)
-            comparison_results[f'Area Between {data_dict[keys[i]]["label"]} and {data_dict[keys[j]]["label"]}'] = area
 
-    best_model = determine_best_model_ks(comparison_results)
+            # Append results to comparison_data
+            comparison_data.append({
+                'Model1': data_dict[keys[i]]["label"],
+                'Model2': data_dict[keys[j]]["label"],
+                'KS Statistic': ks_stat,
+                'P-Value': ks_pvalue,
+                'Area Between CDFs': area
+            })
+
+    # Convert to DataFrame
+    comparison_df = pd.DataFrame(comparison_data)
+
+    # Determine the best model
+    best_model = determine_best_model_ks(comparison_df)
 
     results = {
         'Best Model': best_model,
-        'Comparison Results': comparison_results
+        'Details': comparison_df
     }
     return results
 
 
-def determine_best_model_ks(comparison_results):
+def determine_best_model_ks(comparison_df):
+    # Initialize dictionaries to store aggregated values
     ks_stats = {}
     p_values = {}
     areas = {}
 
-    for key, value in comparison_results.items():
-        if 'KS Test' in key:
-            model1, model2 = key.replace('KS Test ', '').split(' vs ')
-            ks_stat, p_value = value['KS Statistic'], value['P-Value']
+    # Aggregate KS statistic, P-value, and area for each model
+    for _, row in comparison_df.iterrows():
+        models = [row['Model1'], row['Model2']]
+        for model in models:
+            ks_stats.setdefault(model, []).append(row['KS Statistic'])
+            p_values.setdefault(model, []).append(row['P-Value'])
+            areas.setdefault(model, []).append(row['Area Between CDFs'])
 
-            ks_stats.setdefault(model1, []).append(ks_stat)
-            ks_stats.setdefault(model2, []).append(ks_stat)
-
-            p_values.setdefault(model1, []).append(p_value)
-            p_values.setdefault(model2, []).append(p_value)
-        elif 'Area Between' in key:
-            model1, model2 = key.replace('Area Between ', '').split(' and ')
-            area = value
-
-            areas.setdefault(model1, []).append(area)
-            areas.setdefault(model2, []).append(area)
-
-    # Average KS statistic and p-value for each model
+    # Compute average values for each model
     avg_ks = {k: np.mean(v) for k, v in ks_stats.items()}
     avg_p = {k: np.mean(v) for k, v in p_values.items()}
     avg_area = {k: np.mean(v) for k, v in areas.items()}
@@ -620,24 +614,21 @@ def determine_best_model_ks(comparison_results):
     best_model_p = max(avg_p, key=avg_p.get)
     best_model_area = min(avg_area, key=avg_area.get)
 
-    return {
-        'Best Model by KS Statistic': best_model_ks,
-        'Best Model by P-Value': best_model_p,
-        'Best Model by Area': best_model_area
-    }
+    # Create a DataFrame for best model results
+    best_model_df = pd.DataFrame({
+        'Criteria': ['KS Statistic', 'P-Value', 'Area Between CDFs'],
+        'Best Model': [best_model_ks, best_model_p, best_model_area]
+    })
+
+    return best_model_df
 
 
 def compare_cdfs_emd(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
                      operation: Optional[str] = None):
     """
     Compare multiple models based on Earth Mover's Distance (EMD).
-
-    :param operation:
-    :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
-                      keys.
-    :return: A dictionary containing pairwise EMD comparison results.
     """
-    comparison_results = {}
+    comparison_data = []
     keys = list(data_dict.keys())
 
     operations = {
@@ -653,46 +644,49 @@ def compare_cdfs_emd(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
 
     # Pairwise EMD comparison
     for i in range(len(keys)):
-        data_i = data_dict[keys[i]]['data'].to_numpy()
-        if operation is not None:
-            data_i = operations[operation](data_i, axis=0)  # Apply operation across iterations
-        data_i = data_i.flatten()
-
         for j in range(i + 1, len(keys)):
-            data_j = data_dict[keys[j]]['data'].to_numpy()
-            if operation is not None:
-                data_j = operations[operation](data_i, axis=0)  # Apply operation across iterations
-            data_j = data_j.flatten()
-            emd_value = stats.wasserstein_distance(data_i, data_j)
-            comparison_results[f'EMD {data_dict[keys[i]]["label"]} vs {data_dict[keys[j]]["label"]}'] = emd_value
+            # Extract and process data
+            data_i = data_dict[keys[i]]['data'].to_numpy().flatten()
+            data_j = data_dict[keys[j]]['data'].to_numpy().flatten()
 
-    models_ranking = rank_models_emd(comparison_results)
+            # Apply operation if specified
+            if operation is not None:
+                data_i = operations[operation](data_i, axis=0)
+                data_j = operations[operation](data_j, axis=0)
+
+            # Calculate EMD
+            emd_value = stats.wasserstein_distance(data_i, data_j)
+            comparison_data.append({
+                'Model1': data_dict[keys[i]]["label"],
+                'Model2': data_dict[keys[j]]["label"],
+                'EMD Value': emd_value
+            })
+
+    # Convert to DataFrame
+    comparison_df = pd.DataFrame(comparison_data)
+
+    # Rank models
+    models_ranking_df = rank_models_emd(comparison_df)
 
     results = {
-        'Ranked Models': models_ranking,
-        'Comparison Results': comparison_results
+        'Ranked Models': models_ranking_df,
+        'Details': comparison_df
     }
 
     return results
 
 
-def rank_models_emd(emd_results: Dict[str, float]) -> str:
+def rank_models_emd(comparison_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Rank models from best to worst based on Earth Mover's Distance (EMD) and return a formatted string.
-
-    :param emd_results: A dictionary containing pairwise EMD comparison results.
-    :return: A formatted string with model names, ranked from best to worst.
+    Rank models from best to worst based on Earth Mover's Distance (EMD).
     """
-    # Initialize a dictionary to hold the sum of EMD values for each model
     emd_sums = {}
 
-    # Process each comparison result
-    for comparison, emd_value in emd_results.items():
-        model1, model2 = comparison.replace('EMD ', '').split(' vs ')
-
-        # Add EMD value to both models involved in the comparison
-        emd_sums[model1] = emd_sums.get(model1, 0) + emd_value
-        emd_sums[model2] = emd_sums.get(model2, 0) + emd_value
+    # Aggregate EMD values for each model
+    for _, row in comparison_df.iterrows():
+        models = [row['Model1'], row['Model2']]
+        for model in models:
+            emd_sums[model] = emd_sums.get(model, 0) + row['EMD Value']
 
     # Calculate average EMD for each model
     num_models = len(emd_sums)
@@ -701,23 +695,24 @@ def rank_models_emd(emd_results: Dict[str, float]) -> str:
     # Sort models based on average EMD (lower is better)
     sorted_models = sorted(avg_emd.items(), key=lambda x: x[1])
 
-    # Format the output
-    ranking_str = ", ".join([f"Rank {i + 1}: {model[0]}" for i, model in enumerate(sorted_models)])
+    # Create a DataFrame for the ranked models
+    models_ranking_df = pd.DataFrame(sorted_models, columns=['Model', 'Average EMD'])
 
-    return ranking_str
+    return models_ranking_df
 
 
 def compare_cdfs_moments(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
-                         operation: Optional[str] = None):
+                         operation: Optional[str] = None, criteria: Optional[str] = 'mean'):
     """
     Compare multiple models based on statistical moments of their distributions.
 
-    :param operation:
     :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+    :param operation:
+    :param criteria: The criteria to determine the ranking ('mean', 'variance', 'skewness', 'kurtosis').
                       keys.
     :return: A dictionary containing the statistical moments for each model.
     """
-    moments_results = {}
+    moments_data = []
 
     operations = {
         'min': np.min,
@@ -731,49 +726,114 @@ def compare_cdfs_moments(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, p
         raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
 
     for model_name, model_info in data_dict.items():
-        # Extract the data and flatten it to a 1D array
-        data = model_info['data'].to_numpy()
+        data = model_info['data'].to_numpy().flatten()
         if operation is not None:
-            data = operations[operation](data, axis=0)  # Apply operation across iterations
-        data = data.flatten()
-        moments_results[model_name] = {
+            data = operations[operation](data, axis=0)
+
+        moments_data.append({
+            'Model': model_name,
             'Mean': np.mean(data),
             'Variance': np.var(data),
             'Skewness': stats.skew(data),
             'Kurtosis': stats.kurtosis(data)
-        }
+        })
 
-    best_model = rank_models_moments(moments_results)
+    # Convert to DataFrame
+    moments_df = pd.DataFrame(moments_data)
+
+    # Rank models
+    best_model_df = rank_models_moments(moments_df, criteria)
 
     results = {
-        'Ranked Models': best_model,
-        'Comparison Results': moments_results
+        'Ranked Models': best_model_df,
+        'Details': moments_df
     }
 
     return results
 
 
-def rank_models_moments(moment_results: Dict[str, Dict[str, float]],
-                        criteria: str = 'mean') -> str:
+def rank_models_moments(moments_df: pd.DataFrame, criteria: str = 'mean') -> pd.DataFrame:
     """
-    Rank models from best to worst based on a specified statistical moment and return a formatted string.
-
-    :param moment_results: A dictionary containing the statistical moments for each model.
-    :param criteria: The criteria to determine the ranking ('mean', 'variance', 'skewness', 'kurtosis').
-    :return: A formatted string with model names, ranked from best to worst.
+    Rank models from best to worst based on a specified statistical moment.
     """
     if criteria not in ['mean', 'variance', 'skewness', 'kurtosis']:
         raise ValueError("Invalid criteria. Choose from 'mean', 'variance', 'skewness', 'kurtosis'.")
 
-    # Sort the models based on the specified moment
-    sorted_models = sorted(moment_results.items(),
-                           key=lambda x: x[1][criteria.capitalize()],
-                           reverse=(criteria == 'mean'))
+    reverse_order = (criteria == 'mean')  # For mean, higher is better; for others, lower is better
+    sorted_df = moments_df.sort_values(by=[criteria.capitalize()], ascending=not reverse_order)
 
-    # Format the output
-    ranking_str = ", ".join([f"Rank {i + 1}: {model[0]}" for i, model in enumerate(sorted_models)])
+    # Add a rank column
+    sorted_df['Rank'] = range(1, len(sorted_df) + 1)
 
-    return ranking_str
+    return sorted_df[['Model', 'Rank']]
+
+
+# def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
+#     """
+#     Calculate given percentiles for multiple named datasets and rank them from best to worst
+#     based on higher throughput values.
+#
+#     Parameters:
+#     datasets (dict): Dictionary with names as keys and 1-D array-like structures of numerical data as values.
+#     percentile_ranks (list): List of desired percentiles to calculate.
+#
+#     Returns:
+#     dict: A dictionary with dataset names as keys and their ranked percentiles and rankings.
+#     """
+#     if percentile_ranks is None:
+#         percentile_ranks = [50, 90]
+#     percentile_results = {}
+#     for name, data in datasets.items():
+#         percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
+#         percentile_results[name] = percentiles
+#
+#     # Rank results (higher values are better for throughput)
+#     rankings = {key: rank for rank, key in enumerate(
+#         sorted(percentile_results, key=lambda x: percentile_results[x][f'{percentile_ranks[-1]}th Percentile'],
+#                reverse=True), 1)}
+#
+#     # Add rankings to the percentile results
+#     for name in percentile_results:
+#         percentile_results[name]['Rank'] = rankings[name]
+#
+#     # Return results sorted by rank
+#     ranked_results = dict(sorted(percentile_results.items(), key=lambda item: item[1]['Rank']))
+#
+#     return ranked_results
+
+
+def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
+    """
+    Calculate given percentiles for multiple named datasets and rank them from best to worst
+    based on higher throughput values.
+    """
+    if percentile_ranks is None:
+        percentile_ranks = [50, 90]
+
+    # Prepare data for DataFrame
+    percentile_data = []
+
+    for name, data_info in datasets.items():
+        data = data_info['data']
+        percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
+        percentiles['Model'] = data_info['label']
+        percentile_data.append(percentiles)
+
+    # Create DataFrame
+    percentile_df = pd.DataFrame(percentile_data)
+
+    # Rank models based on the highest percentile value and convert rank to integer
+    percentile_df['Rank'] = percentile_df[f'{percentile_ranks[-1]}th Percentile'] \
+        .rank(ascending=False, method='min').astype(int)
+
+    # Arrange columns
+    column_order = ['Model'] + [f'{p}th Percentile' for p in percentile_ranks] + ['Rank']
+    percentile_df = percentile_df[column_order]
+
+    # Sort DataFrame by rank
+    percentile_df.sort_values(by='Rank', inplace=True)
+
+    return percentile_df
 
 
 def calculate_area_throughput(df, bandwidth_hz, square_side_m, return_type='numpy'):
@@ -805,37 +865,3 @@ def calculate_area_throughput(df, bandwidth_hz, square_side_m, return_type='nump
         return pd.DataFrame(area_throughput_per_iteration, columns=['Area Throughput'])
     else:  # default to numpy if anything other than 'pandas' is specified
         return np.array(area_throughput_per_iteration)
-
-
-def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
-    """
-    Calculate given percentiles for multiple named datasets and rank them from best to worst
-    based on higher throughput values.
-
-    Parameters:
-    datasets (dict): Dictionary with names as keys and 1-D array-like structures of numerical data as values.
-    percentile_ranks (list): List of desired percentiles to calculate.
-
-    Returns:
-    dict: A dictionary with dataset names as keys and their ranked percentiles and rankings.
-    """
-    if percentile_ranks is None:
-        percentile_ranks = [50, 90]
-    percentile_results = {}
-    for name, data in datasets.items():
-        percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
-        percentile_results[name] = percentiles
-
-    # Rank results (higher values are better for throughput)
-    rankings = {key: rank for rank, key in enumerate(
-        sorted(percentile_results, key=lambda x: percentile_results[x][f'{percentile_ranks[-1]}th Percentile'],
-               reverse=True), 1)}
-
-    # Add rankings to the percentile results
-    for name in percentile_results:
-        percentile_results[name]['Rank'] = rankings[name]
-
-    # Return results sorted by rank
-    ranked_results = dict(sorted(percentile_results.items(), key=lambda item: item[1]['Rank']))
-
-    return ranked_results
