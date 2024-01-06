@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 from stable_baselines3 import SAC
 
@@ -19,7 +20,7 @@ optim_name = "SGD"
 models_dict = {
     'MODEL_DELTA_SE': 'MODEL_SAC_SGD_DELTA_CF_SE_202401050057',
     'MODEL_EXP_DELTA_CLIP_SEv0': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_CF_SE_202401050105V0',
-    'MODEL_EXP_DELTA_CLIP_SEv1': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_CF_SE_202401050113V1',
+    # 'MODEL_EXP_DELTA_CLIP_SEv1': 'MODEL_SAC_SGD_EXP_DELTA_CLIP_CF_SE_202401050113V1',
     'MODEL_LOG_DELTA_SE': 'MODEL_SAC_SGD_LOG_DELTA_CF_SE_202401050126',
     'MODEL_RELATIVE_SE': 'MODEL_SAC_SGD_RELATIVE_CF_SE_202401050139',
     'MODEL_EXP_RELATIVE_CLIP_SE': 'MODEL_SAC_SGD_EXP_RELATIVE_CLIP_CF_SE_202401050152',
@@ -44,6 +45,8 @@ bm = MultiModelBenchmark(models=models_dict, env=env, num_of_iterations=10000, m
 
 results = bm.run(show_progress=True)
 
+AP_LOCATION_SAVED = False
+
 for key, value in results.items():
     algo_name = "SAC"
     optim_name = "SGD"
@@ -53,3 +56,7 @@ for key, value in results.items():
     file_name = f'{key}.csv'
     file = os.path.join(results_dir, results_folder, file_name)
     results[key].to_csv(file)
+    # save APs locations
+    while not AP_LOCATION_SAVED:
+        pd.DataFrame(APs_positions).to_csv(os.path.join(results_dir, results_folder, 'APs_locations.csv'))
+        AP_LOCATION_SAVED = True
