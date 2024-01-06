@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
+import seaborn as sns
 import torch
 from scipy.linalg import sqrtm
-from scipy.stats import gmean, stats
+from scipy.stats import stats
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.vec_env import VecEnv
@@ -439,19 +440,12 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
                  title: str, xlabel: Optional[str], operation: Optional[str], cumulative: bool) -> None:
     """
     Plot CDF or PDF for multiple models using matplotlib, with an optional operation applied across iterations.
-
-    :param data: A dictionary containing the data and plot settings for each model.
-    :param title: Title of the plot.
-    :param xlabel: Label for the x-axis.
-    :param operation: The operation to apply on the data (e.g., 'mean', 'max', 'gmean') across iterations.
-    :param cumulative: Whether to plot the CDF (True) or PDF (False).
     """
     operations = {
         'min': np.min,
         'max': np.max,
         'mean': np.mean,
         'sum': np.sum,
-        'gmean': gmean
     }
 
     if operation is not None and operation not in operations:
@@ -468,22 +462,35 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
         if operation is not None:
             value = operations[operation](value, axis=0)  # Apply operation across iterations
 
+        value = value.flatten()
+
         if cumulative:
-            sorted_data = np.sort(value.flatten())
+            sorted_data = np.sort(value)
             yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-            plt.plot(sorted_data, yvals, label=info['label'], color=info.get('color'), linestyle=info.get('linestyle'),
+            plt.plot(sorted_data, yvals,
+                     label=info['label'],
+                     color=info.get('color'),
+                     linestyle=info.get('linestyle'),
+                     marker=info.get('marker', None),
                      linewidth=info.get('linewidth'))
         else:
-            bins = np.linspace(np.min(value), np.max(value), 30)
-            counts, bin_edges = np.histogram(value, bins=bins, density=True)
-            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-            plt.plot(bin_centers, counts, label=info['label'], color=info.get('color'), linestyle=info.get('linestyle'),
-                     linewidth=info.get('linewidth'))
+            if len(np.unique(value)) > 1:
+                bins = np.linspace(np.min(value), np.max(value), 30)
+                counts, bin_edges = np.histogram(value, bins=bins, density=True)
+                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+                plt.plot(bin_centers, counts,
+                         label=info['label'],
+                         color=info.get('color'),
+                         linestyle=info.get('linestyle'),
+                         marker=info.get('marker', None),
+                         linewidth=info.get('linewidth'))
+            else:
+                print(f"Data for {key} lacks variability, skipping PDF plot.")
 
     plt.xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
     plt.ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
     plt.title(title)
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.3, 0.5), loc='center right')
     plt.grid(True)
     plt.show()
 
@@ -505,7 +512,6 @@ def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
         'max': np.max,
         'mean': np.mean,
         'sum': np.sum,
-        'gmean': gmean
     }
 
     if operation is not None and operation not in operations:
@@ -524,7 +530,6 @@ def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
             '25th Percentile': np.percentile(se_values, 25),
             '50th Percentile': np.percentile(se_values, 50),
             '75th Percentile': np.percentile(se_values, 75),
-            'Geometric Mean': gmean(se_values)
         }
 
     return pd.DataFrame(comparison_metrics).T
@@ -540,7 +545,6 @@ def compare_cdfs_ks(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Dat
         'max': np.max,
         'mean': np.mean,
         'sum': np.sum,
-        'gmean': gmean
     }
 
     if operation is not None and operation not in operations:
@@ -636,7 +640,6 @@ def compare_cdfs_emd(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
         'max': np.max,
         'mean': np.mean,
         'sum': np.sum,
-        'gmean': gmean
     }
 
     if operation is not None and operation not in operations:
@@ -719,7 +722,6 @@ def compare_cdfs_moments(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, p
         'max': np.max,
         'mean': np.mean,
         'sum': np.sum,
-        'gmean': gmean
     }
 
     if operation is not None and operation not in operations:
@@ -766,40 +768,6 @@ def rank_models_moments(moments_df: pd.DataFrame, criteria: str = 'mean') -> pd.
     sorted_df['Rank'] = range(1, len(sorted_df) + 1)
 
     return sorted_df[['Model', 'Rank']]
-
-
-# def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
-#     """
-#     Calculate given percentiles for multiple named datasets and rank them from best to worst
-#     based on higher throughput values.
-#
-#     Parameters:
-#     datasets (dict): Dictionary with names as keys and 1-D array-like structures of numerical data as values.
-#     percentile_ranks (list): List of desired percentiles to calculate.
-#
-#     Returns:
-#     dict: A dictionary with dataset names as keys and their ranked percentiles and rankings.
-#     """
-#     if percentile_ranks is None:
-#         percentile_ranks = [50, 90]
-#     percentile_results = {}
-#     for name, data in datasets.items():
-#         percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
-#         percentile_results[name] = percentiles
-#
-#     # Rank results (higher values are better for throughput)
-#     rankings = {key: rank for rank, key in enumerate(
-#         sorted(percentile_results, key=lambda x: percentile_results[x][f'{percentile_ranks[-1]}th Percentile'],
-#                reverse=True), 1)}
-#
-#     # Add rankings to the percentile results
-#     for name in percentile_results:
-#         percentile_results[name]['Rank'] = rankings[name]
-#
-#     # Return results sorted by rank
-#     ranked_results = dict(sorted(percentile_results.items(), key=lambda item: item[1]['Rank']))
-#
-#     return ranked_results
 
 
 def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
@@ -865,3 +833,88 @@ def calculate_area_throughput(df, bandwidth_hz, square_side_m, return_type='nump
         return pd.DataFrame(area_throughput_per_iteration, columns=['Area Throughput'])
     else:  # default to numpy if anything other than 'pandas' is specified
         return np.array(area_throughput_per_iteration)
+
+
+def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, grid_size, rounding_precision=0, colorbar_ticks=None):
+    """
+    Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
+    and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
+
+    :param sinr_df: A DataFrame of SINR values in mW.
+    :param location_df: A DataFrame of UE locations in 'x+yj' string format.
+    :param ap_location_df: A DataFrame of AP locations in 'x+yj' string format.
+    :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
+    :param rounding_precision: Number of decimal places to round coordinates.
+    :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
+    """
+    if sinr_df.shape != location_df.shape:
+        raise ValueError("SINR DataFrame and location DataFrame must have the same shape.")
+
+    if colorbar_ticks == 'custom':
+        # Customized colorbar ticks
+        colorbar_ticks = [
+            (-30, '-30 dB'),
+            (-25, '-25 dB'),
+            (-20, '-20 dB'),
+            (-15, '-15 dB'),
+            (-10, '-10 dB'),
+            (-5, '-5 dB'),
+            (0, '0 dB'),
+            (5, '5 dB'),
+            (10, '10 dB'),
+            (15, '15 dB'),
+            (20, '20 dB'),
+            (25, '25 dB'),
+            (30, '30 dB')
+        ]
+
+    # Replace non-positive values with NaN
+    sinr_df[sinr_df <= 0] = np.nan
+
+    # Convert SINR values from mW to dB
+    sinr_df = 10 * np.log10(sinr_df)
+
+    data_list = []
+
+    for i in range(sinr_df.shape[0]):
+        for j in range(sinr_df.shape[1]):
+            location_str = location_df.iloc[i, j]
+            location = complex(location_str)
+            x, y = round(location.real, rounding_precision), round(location.imag, rounding_precision)
+            sinr_value = sinr_df.iloc[i, j]
+            data_list.append({'x': x, 'y': y, 'SINR': sinr_value})
+
+    df = pd.DataFrame(data_list)
+
+    # Normalize and group data into grid cells
+    df['x_norm'] = pd.cut(df['x'], bins=grid_size[1], labels=range(grid_size[1]))
+    df['y_norm'] = pd.cut(df['y'], bins=grid_size[0], labels=range(grid_size[0]))
+
+    # Calculate mean SINR for each grid cell
+    grid_data = df.groupby(['y_norm', 'x_norm'], observed=True).SINR.mean().unstack()  # NaN for empty cells
+
+    plt.figure(figsize=(10, 8))
+    _colors = sns.color_palette("hls", 60)
+    heatmap = sns.heatmap(grid_data, vmin=-30, vmax=30, annot=False, cmap=_colors, mask=grid_data.isnull())
+    plt.title("SINR Heatmap with Grid (dB)")
+
+    # Normalize and plot AP locations
+    for location_str in ap_location_df.iloc[:, 0]:
+        ap_location = complex(location_str)
+        ap_x_norm = np.digitize(ap_location.real, np.linspace(df['x'].min(), df['x'].max(), grid_size[1])) - 1
+        ap_y_norm = np.digitize(ap_location.imag, np.linspace(df['y'].min(), df['y'].max(), grid_size[0])) - 1
+        heatmap.scatter(ap_x_norm, ap_y_norm, color='black', s=100, marker='*')
+
+    # Customize colorbar ticks if specified
+    if colorbar_ticks:
+        colorbar = heatmap.collections[0].colorbar
+        colorbar.set_ticks([tick for tick, _ in colorbar_ticks])
+        colorbar.set_ticklabels([label for _, label in colorbar_ticks])
+
+    # Hide coordinates on the axes
+    heatmap.set_xticklabels([])
+    heatmap.set_yticklabels([])
+    heatmap.set_xlabel('')
+    heatmap.set_ylabel('')
+
+    plt.show()
