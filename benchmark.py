@@ -207,6 +207,7 @@ class MultiModelBenchmark:
             'POWERS': np.zeros((self.env.K, self.num_of_iterations)),
             'SIGNALS': np.zeros((self.env.K, self.num_of_iterations)),
             'CF_SEs': np.zeros((self.env.K, self.num_of_iterations)),
+            'SINRs': np.zeros((self.env.K, self.num_of_iterations)),
             # 'INTERFERENCEs': np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         } for model_name in self.models}
 
@@ -227,6 +228,10 @@ class MultiModelBenchmark:
         self.MAXMIN_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
         self.MAXPROD_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
         self.SUMRATE_SIGNALs = np.zeros((self.env.K, self.num_of_iterations))
+
+        self.MAXMIN_SINRs = np.zeros((self.env.K, self.num_of_iterations))
+        self.MAXPROD_SINRs = np.zeros((self.env.K, self.num_of_iterations))
+        self.SUMRATE_SINRs = np.zeros((self.env.K, self.num_of_iterations))
 
         # self.MAXMIN_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         # self.MAXPROD_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
@@ -252,6 +257,8 @@ class MultiModelBenchmark:
         self.maxprod_interference = copy.deepcopy(init_interference)
         self.sumrate_interference = copy.deepcopy(init_interference)
 
+        self.UEs_LOCATIONS = np.zeros((self.env.K, self.num_of_iterations), dtype=np.complex64)
+
     def run(self, show_progress: bool = True):
         """
         Executes the benchmark for the specified number of iterations and returns the results as Pandas DataFrames.
@@ -268,7 +275,7 @@ class MultiModelBenchmark:
 
         for i in iterator:
             if self.mobility:
-                self.ues_positions = self.env.update_ue_positions()
+                self.ues_positions = self.env.update_ue_positions(self.ues_positions)
             else:
                 self.ues_positions = None
 
@@ -281,7 +288,10 @@ class MultiModelBenchmark:
                 self.results[model_name]['POWERS'][:, i] = info['predicted_power']
                 self.results[model_name]['SIGNALS'][:, i] = info['signal']
                 self.results[model_name]['CF_SEs'][:, i] = info['cf_spectral_efficiency']
+                self.results[model_name]['SINRs'][:, i] = info['sinr']
                 # self.results[model_name]['INTERFERENCEs'][:, :, i] = info['interference']
+
+            self.UEs_LOCATIONS[:, i] = copy.deepcopy(self.ues_positions)
 
             if self.include_maxmin:
                 maxmin_info = self.maxmin_env.maxmin_algo(self.maxmin_signal, self.maxmin_interference, self.max_power,
@@ -297,6 +307,7 @@ class MultiModelBenchmark:
 
                 self.MAXMIN_POWERs[:, i] = maxmin_info['optimized_power']
                 self.MAXMIN_SIGNALs[:, i] = maxmin_info['signal']
+                self.MAXMIN_SINRs[:, i] = maxmin_info['sinr']
                 # self.MAXMIN_INTERFERENCEs[:, :, i] = maxmin_info['interference']
 
             if self.include_maxprod:
@@ -313,6 +324,7 @@ class MultiModelBenchmark:
 
                 self.MAXPROD_POWERs[:, i] = maxprod_info['optimized_power']
                 self.MAXPROD_SIGNALs[:, i] = maxprod_info['signal']
+                self.MAXPROD_SINRs[:, i] = maxprod_info['sinr']
                 # self.MAXPROD_INTERFERENCEs[:, :, i] = maxprod_info['interference']
 
             if self.include_sumrate:
@@ -329,6 +341,7 @@ class MultiModelBenchmark:
 
                 self.SUMRATE_POWERs[:, i] = sumrate_info['optimized_power']
                 self.SUMRATE_SIGNALs[:, i] = sumrate_info['signal']
+                self.SUMRATE_SINRs[:, i] = sumrate_info['sinr']
                 # self.SUMRATE_INTERFERENCEs[:, :, i] = sumrate_info['interference']
 
         # Convert results to Pandas DataFrames
@@ -337,17 +350,21 @@ class MultiModelBenchmark:
             'MAXMIN_POWERs': pd.DataFrame(self.MAXMIN_POWERs),
             'MAXMIN_SIGNALs': pd.DataFrame(self.MAXMIN_SIGNALs),
             'MAXMIN_CF_SEs': pd.DataFrame(self.MAXMIN_CF_SEs),
+            'MAXMIN_SINRs': pd.DataFrame(self.MAXMIN_SINRs),
             # 'MAXMIN_INTERFERENCEs': pd.DataFrame(self.MAXMIN_INTERFERENCEs.reshape(self.env.K, -1)),
             'MAXPROD_SEs': pd.DataFrame(self.MAXPROD_SEs),
             'MAXPROD_POWERs': pd.DataFrame(self.MAXPROD_POWERs),
             'MAXPROD_SIGNALs': pd.DataFrame(self.MAXPROD_SIGNALs),
             'MAXPROD_CF_SEs': pd.DataFrame(self.MAXPROD_CF_SEs),
+            'MAXPROD_SINRs': pd.DataFrame(self.MAXPROD_SINRs),
             # 'MAXPROD_INTERFERENCEs': pd.DataFrame(self.MAXPROD_INTERFERENCEs.reshape(self.env.K, -1)),
             'SUMRATE_SEs': pd.DataFrame(self.SUMRATE_SEs),
             'SUMRATE_POWERs': pd.DataFrame(self.SUMRATE_POWERs),
             'SUMRATE_SIGNALs': pd.DataFrame(self.SUMRATE_SIGNALs),
             'SUMRATE_CF_SEs': pd.DataFrame(self.SUMRATE_CF_SEs),
+            'SUMRATE_SINRs': pd.DataFrame(self.SUMRATE_SINRs),
             # 'SUMRATE_INTERFERENCEs': pd.DataFrame(self.SUMRATE_INTERFERENCEs.reshape(self.env.K, -1))
+            'UEs_LOCATIONS': pd.DataFrame(self.UEs_LOCATIONS)
         }
 
         # Add results from predictive models
