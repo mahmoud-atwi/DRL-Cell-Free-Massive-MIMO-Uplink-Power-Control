@@ -401,6 +401,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['signal'] = signal
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
+            _info['sinr'] = calc_sinr(_opt_power, signal, interference)
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -419,6 +420,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
+            _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
 
         return _info
 
@@ -435,6 +437,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['signal'] = signal
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
+            _info['sinr'] = calc_sinr(_opt_power, signal, interference)
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -453,6 +456,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
+            _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
 
         return _info
 
@@ -469,6 +473,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['signal'] = signal
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
+            _info['sinr'] = calc_sinr(_opt_power, signal, interference)
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -487,12 +492,17 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = _new_interference
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
+            _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
 
         return _info
 
-    def update_ue_positions(self) -> np.ndarray:
+    def update_ue_positions(self, locations: Optional[np.array] = None) -> np.ndarray:
         # Method to update user equipment positions based on mobility
-        return random_waypoint(self.UEs_positions, self.area_bounds, sim_para.speed_range, sim_para.max_pause_time,
+        if locations is None:
+            _ues_locations = self.UEs_positions
+        else:
+            _ues_locations = locations
+        return random_waypoint(_ues_locations, self.area_bounds, sim_para.speed_range, sim_para.max_pause_time,
                                sim_para.time_step, sim_para.pause_prob)
 
     def simulate(self, action, ues_positions) -> Tuple[np.ndarray, dict]:
@@ -519,6 +529,7 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info['predicted_power'] = _rescaled_action
         _info['ues_positions'] = self.UEs_positions
         _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
+        _info['sinr'] = calc_sinr(self.UEs_power, _updated_signal, _updated_interference)
 
         # Update the state
         self.state = _updated_Beta_K
