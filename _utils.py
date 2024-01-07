@@ -495,7 +495,7 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
     plt.show()
 
 
-def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
+def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]], data_label: str,
                    operation: Optional[str] = None):
     """
     Compare multiple models based on their spectral efficiency.
@@ -524,8 +524,8 @@ def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
         se_values = se_values.flatten()
         comparison_metrics[model_name] = {
             'Label': model_info['label'],  # Include the label in the comparison
-            'Average SE': np.mean(se_values),
-            'Max SE': np.max(se_values),
+            f'Average {data_label}': np.mean(se_values),
+            f'Max {data_label}': np.max(se_values),
             'Standard Deviation': np.std(se_values),
             '25th Percentile': np.percentile(se_values, 25),
             '50th Percentile': np.percentile(se_values, 50),
@@ -918,3 +918,21 @@ def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, grid_size, rounding_
     heatmap.set_ylabel('')
 
     plt.show()
+
+
+def duration_benchmarking(duration_data):
+    _results = []
+
+    for model, data in duration_data.items():
+        df = data['data']
+        _stats = {
+            'Model': data['label'],
+            'Mean Duration': df.mean(axis=1).iloc[0],
+            'Median Duration': df.median(axis=1).iloc[0],
+            'Standard Deviation': df.std(axis=1).iloc[0],
+            'Max Duration': df.max(axis=1).iloc[0],
+            'Min Duration': df.min(axis=1).iloc[0]
+        }
+        _results.append(_stats)
+
+    return pd.DataFrame(_results)
