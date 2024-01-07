@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 import gymnasium as gym
 
+from time import time
 from gymnasium import spaces
 from collections import deque
 from scipy.stats import gmean
@@ -361,13 +362,16 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info = dict()
 
         # Adjust UL power based on action
+        _start_time = time()
         _allocated_UEs_power = ((action + 1) / 2) * (self.max_power - self.min_power) + self.min_power
+        _end_time = time()
 
         if lagging_spectral_efficiency:
             _info['Beta_K'] = self.state
             _info['signal'] = signal
             _info['interference'] = interference
             _info['predicted_power'] = _allocated_UEs_power
+            _info['duration'] = _end_time - _start_time
 
         if not lagging_spectral_efficiency:
             # Recalculate new B_k, signal and interference based on the new UL power
@@ -383,6 +387,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['signal'] = _new_signal
             _info['interference'] = _new_interference
             _info['predicted_power'] = _allocated_UEs_power
+            _info['duration'] = _end_time - _start_time
 
         return _info
 
@@ -392,9 +397,10 @@ class MobilityCFmMIMOEnv(gym.Env):
         # Method implementing the max-min power control algorithm
         _info = dict()
         _current_Beta_K = self.state
-
+        _start_time = time()
         _, _opt_power = power_opt_maxmin(signal, interference, max_power, prelog_factor,
                                          return_spectral_efficiency=False)
+        _end_time = time()
 
         if lagging_spectral_efficiency:
             _info['Beta_K'] = _current_Beta_K
@@ -402,6 +408,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
             _info['sinr'] = calc_sinr(_opt_power, signal, interference)
+            _info['duration'] = _end_time - _start_time
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -421,6 +428,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
             _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
+            _info['duration'] = _end_time - _start_time
 
         return _info
 
@@ -429,8 +437,10 @@ class MobilityCFmMIMOEnv(gym.Env):
                      beta_val: Optional[np.ndarray] = None) -> dict:
         # Method implementing the max-product SINR power control algorithm
         _info = dict()
+        _start_time = time()
         _, _opt_power = power_opt_prod_sinr(signal, interference, max_power, prelog_factor,
                                             return_spectral_efficiency=False)
+        _end_time = time()
 
         if lagging_spectral_efficiency:
             _info['Beta_K'] = self.state
@@ -438,6 +448,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
             _info['sinr'] = calc_sinr(_opt_power, signal, interference)
+            _info['duration'] = _end_time - _start_time
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -457,6 +468,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
             _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
+            _info['duration'] = _end_time - _start_time
 
         return _info
 
@@ -465,8 +477,10 @@ class MobilityCFmMIMOEnv(gym.Env):
                         pilot_index: Optional[np.ndarray] = None, beta_val: Optional[np.ndarray] = None) -> dict:
         # Method implementing the max-sum-rate power control algorithm
         _info = dict()
+        _start_time = time()
         _, _opt_power = power_opt_sum_rate(signal, interference, max_power, prelog_factor,
                                            return_spectral_efficiency=False)
+        _end_time = time()
 
         if lagging_spectral_efficiency:
             _info['Beta_K'] = self.state
@@ -474,6 +488,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['interference'] = interference
             _info['optimized_power'] = _opt_power
             _info['sinr'] = calc_sinr(_opt_power, signal, interference)
+            _info['duration'] = _end_time - _start_time
 
         if not lagging_spectral_efficiency:
             if ues_positions is not None:
@@ -493,6 +508,7 @@ class MobilityCFmMIMOEnv(gym.Env):
             _info['optimized_power'] = _opt_power
             _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
             _info['sinr'] = calc_sinr(_opt_power, _new_signal, _new_interference)
+            _info['duration'] = _end_time - _start_time
 
         return _info
 
