@@ -87,6 +87,7 @@ class TrialEvalCallback(EvalCallback):
 
     :param eval_env: The environment used for evaluation.
     :param trial: The Optuna trial object.
+    :param n_eval_episodes: Number of evaluation episodes.
     :param eval_freq: Frequency of evaluations.
     :param deterministic: Whether to use deterministic actions during evaluation.
     :param verbose: Verbosity level.
@@ -287,7 +288,7 @@ def feasibility_problem_cvx(signal: np.ndarray, interference: np.ndarray, max_po
     :param signal: An array of signal power values.
     :param interference: A matrix of interference values.
     :param max_power: The maximum power that can be allocated.
-    :param K: The number of users or elements in the system.
+    :param K: The number of UEs.
     :param sinr_constraint: The SINR constraint that needs to be satisfied.
     :return: A tuple (feasible, rhoSolution) where 'feasible' is a boolean indicating if the problem is feasible,
              and 'rhoSolution' is an array representing the power allocation if feasible, or None if infeasible.
@@ -498,11 +499,13 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
 def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]], data_label: str,
                    operation: Optional[str] = None):
     """
-    Compare multiple models based on their spectral efficiency.
+    Compare multiple models.
 
-    :param operation:
+
     :param models_data: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
                         keys.
+    :param data_label: The label for the data being compared (e.g. SE or SINR).
+    :param operation: The operation to apply across iterations ('min', 'max', 'mean', 'sum').
     :return: A DataFrame with comparison metrics for each model.
     """
     comparison_metrics = {}
@@ -537,6 +540,20 @@ def compare_models(models_data: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
 
 def compare_cdfs_ks(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
                     operation: Optional[str] = None):
+    """
+    Compare distributions of data from different models using the Kolmogorov-Smirnov (KS) test and calculate the area
+    between their CDFs.
+
+    :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+                      keys. The 'data' is expected to be either np.ndarray, pd.DataFrame, or pd.Series.
+    :param operation: The operation to apply to the data before comparison. Supported operations are 'min', 'max',
+                      'mean', 'sum'. If None, raw data is used for comparison. Defaults to None.
+
+    :return: A DataFrame containing the 'Best Model' based on KS test results and 'Details' as a DataFrame containing
+             comparison metrics (KS Statistic, P-Value, and Area Between CDFs) for each pair of models.
+
+    :raises ValueError: If an invalid operation is specified.
+    """
     comparison_data = []
     keys = list(data_dict.keys())
 
@@ -595,6 +612,17 @@ def compare_cdfs_ks(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Dat
 
 
 def determine_best_model_ks(comparison_df):
+    """
+    Determine the best model based on aggregated KS test statistics.
+
+    This function evaluates multiple models based on Kolmogorov-Smirnov statistics, P-values, and areas between CDFs.
+    It computes the average KS statistic, average P-value, and average area between CDFs for each model and identifies
+    the best model for each criterion.
+
+    :param comparison_df: A DataFrame containing comparison metrics ('KS Statistic', 'P-Value', and 'Area Between CDFs')
+                          for each pair of models.
+    :return: A DataFrame with the best model according to each criterion: KS Statistic, P-Value, and Area Between CDFs.
+    """
     # Initialize dictionaries to store aggregated values
     ks_stats = {}
     p_values = {}
@@ -631,6 +659,16 @@ def compare_cdfs_emd(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
                      operation: Optional[str] = None):
     """
     Compare multiple models based on Earth Mover's Distance (EMD).
+
+    :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
+                      keys. The 'data' is expected to be either np.ndarray, pd.DataFrame, or pd.Series.
+    :param operation: The operation to apply to the data before comparison. Supported operations are 'min', 'max',
+                      'mean', 'sum'. If None, raw data is used for comparison. Defaults to None.
+
+    :return: A DataFrame containing 'Ranked Models' based on EMD values and 'Details' as a DataFrame containing EMD
+             values for each pair of models.
+
+    :raises ValueError: If an invalid operation is specified.
     """
     comparison_data = []
     keys = list(data_dict.keys())
@@ -681,7 +719,14 @@ def compare_cdfs_emd(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, pd.Da
 
 def rank_models_emd(comparison_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Rank models from best to worst based on Earth Mover's Distance (EMD).
+    Rank models based on their Earth Mover's Distance (EMD) values.
+
+    This function computes the average EMD for each model and ranks them from best (lowest EMD) to worst (highest EMD).
+
+    :param comparison_df: A DataFrame containing EMD values for each pair of models.
+                          The DataFrame should have columns 'Model1', 'Model2', and 'EMD Value'.
+    :return: A DataFrame with models ranked from best to worst based on average EMD.
+             The DataFrame contains columns 'Model' and 'Average EMD'.
     """
     emd_sums = {}
 
@@ -712,7 +757,7 @@ def compare_cdfs_moments(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, p
     :param data_dict: A dictionary where keys are model names and the values are dictionaries with 'label' and 'data'
     :param operation:
     :param criteria: The criteria to determine the ranking ('mean', 'variance', 'skewness', 'kurtosis').
-                      keys.
+                     keys.
     :return: A dictionary containing the statistical moments for each model.
     """
     moments_data = []
@@ -756,7 +801,19 @@ def compare_cdfs_moments(data_dict: Dict[str, Dict[str, Union[str, np.ndarray, p
 
 def rank_models_moments(moments_df: pd.DataFrame, criteria: str = 'mean') -> pd.DataFrame:
     """
-    Rank models from best to worst based on a specified statistical moment.
+    Rank models based on statistical moments (mean, variance, skewness, or kurtosis).
+
+    This function sorts the models based on the specified statistical moment and ranks them from best to worst.
+    The 'mean' criterion ranks models with higher means as better, while 'variance', 'skewness', and 'kurtosis'
+    rank lower values as better.
+
+    :param moments_df: A DataFrame containing statistical moments for each model.
+                       It should include columns for 'Model', 'Mean', 'Variance', 'Skewness', and 'Kurtosis'.
+    :param criteria: The statistical moment to use for ranking models.
+                     Options are 'mean', 'variance', 'skewness', 'kurtosis'. Defaults to 'mean'.
+    :return: A DataFrame with models ranked based on the specified criteria.
+             It includes columns 'Model' and 'Rank'.
+    :raises ValueError: If an invalid criteria is specified.
     """
     if criteria not in ['mean', 'variance', 'skewness', 'kurtosis']:
         raise ValueError("Invalid criteria. Choose from 'mean', 'variance', 'skewness', 'kurtosis'.")
@@ -770,10 +827,21 @@ def rank_models_moments(moments_df: pd.DataFrame, criteria: str = 'mean') -> pd.
     return sorted_df[['Model', 'Rank']]
 
 
-def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
+def calculate_and_rank_percentiles(data_dict: Dict[str, Dict[str, np.ndarray]],
+                                   percentile_ranks: List[int] = None) -> pd.DataFrame:
     """
-    Calculate given percentiles for multiple named datasets and rank them from best to worst
-    based on higher throughput values.
+    Calculate specified percentiles for multiple datasets and rank them based on the highest values.
+
+    :param data_dict: A dictionary where keys are dataset names, and values are dictionaries containing:
+                     - 'data': Numpy array of dataset values.
+                     - 'label': Label or name of the dataset.
+    :param percentile_ranks: A list of integers specifying the percentiles to calculate (e.g., [50, 90]).
+                             Defaults to [50, 90] if None is provided.
+    :return: A DataFrame with percentile values for each dataset and a rank based on the last percentile value.
+             Datasets are ranked from best (highest percentile value) to worst.
+
+    This function calculates the given percentiles for each dataset and ranks the datasets based on their
+    highest percentile value, with higher values indicating better performance.
     """
     if percentile_ranks is None:
         percentile_ranks = [50, 90]
@@ -781,7 +849,7 @@ def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
     # Prepare data for DataFrame
     percentile_data = []
 
-    for name, data_info in datasets.items():
+    for name, data_info in data_dict.items():
         data = data_info['data']
         percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
         percentiles['Model'] = data_info['label']
@@ -804,7 +872,21 @@ def calculate_and_rank_percentiles(datasets, percentile_ranks=None):
     return percentile_df
 
 
-def calculate_area_throughput(df, bandwidth_hz, square_side_m, return_type='numpy'):
+def calculate_area_throughput(df: pd.DataFrame, bandwidth_hz: float, square_side_m: float, return_type: str = 'numpy'):
+    """
+    Calculate the area throughput for each iteration in a DataFrame.
+
+    Area throughput is calculated by multiplying the bandwidth with the cell density (cells per km²) and the total
+    spectral efficiency for each iteration.
+
+    :param df: A DataFrame where each column represents an iteration, and each row represents a cell.
+               The DataFrame values are spectral efficiencies.
+    :param bandwidth_hz: The system bandwidth in Hertz.
+    :param square_side_m: The side length of the square area in meters.
+    :param return_type: The type of the return value. If 'pandas', returns a DataFrame; if 'numpy' or anything else,
+                        returns a NumPy array. Defaults to 'numpy'.
+    :return: A DataFrame or NumPy array of area throughput values for each iteration.
+    """
     # Convert square side from meters to kilometers
     square_side_km = square_side_m / 1000
 
@@ -835,14 +917,18 @@ def calculate_area_throughput(df, bandwidth_hz, square_side_m, return_type='nump
         return np.array(area_throughput_per_iteration)
 
 
-def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, grid_size, rounding_precision=0, colorbar_ticks=None):
+def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, grid_size=(100, 100),
+                      rounding_precision=0, colorbar_ticks=None):
     """
     Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
     and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
 
+
     :param sinr_df: A DataFrame of SINR values in mW.
     :param location_df: A DataFrame of UE locations in 'x+yj' string format.
     :param ap_location_df: A DataFrame of AP locations in 'x+yj' string format.
+    :param vmin: Minimum value for the colorbar.
+    :param vmax: Maximum value for the colorbar.
     :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
     :param rounding_precision: Number of decimal places to round coordinates.
     :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
@@ -895,7 +981,7 @@ def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, grid_size, rounding_
 
     plt.figure(figsize=(10, 8))
     _colors = sns.color_palette("hls", 60)
-    heatmap = sns.heatmap(grid_data, vmin=-30, vmax=30, annot=False, cmap=_colors, mask=grid_data.isnull())
+    heatmap = sns.heatmap(grid_data, vmin=vmin, vmax=vmax, annot=False, cmap=_colors, mask=grid_data.isnull())
     plt.title("SINR Heatmap with Grid (dB)")
 
     # Normalize and plot AP locations
@@ -921,6 +1007,17 @@ def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, grid_size, rounding_
 
 
 def duration_benchmarking(duration_data):
+    """
+    Benchmark models based on duration metrics.
+
+    This function calculates various statistics (mean, median, standard deviation, max, and min) for the duration
+    data of different models.
+
+    :param duration_data: A dictionary where keys are model names, and values are dictionaries containing:
+                          - 'data': A DataFrame with duration data for the model.
+                          - 'label': The label or name of the model.
+    :return: A DataFrame summarizing the duration statistics for each model. Includes columns for each statistic.
+    """
     _results = []
 
     for model, data in duration_data.items():
