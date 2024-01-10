@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/computational_complexity.py" afterDir="false" />
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update func doc">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark.py" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/benchmarking.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pathloss_threeslope.py" beforeDir="false" afterPath="$PROJECT_DIR$/pathloss_threeslope.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,45 +33,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python._options.executor": "Run",
-    "Python.benchmark.executor": "Run",
-    "Python.computational_complexity.executor": "Run",
-    "Python.hparam_opt (1).executor": "Run",
-    "Python.hparam_opt.executor": "Debug",
-    "Python.hparam_opt_copy.executor": "Debug",
-    "Python.hyperparams.executor": "Debug",
-    "Python.mobility_env.executor": "Run",
-    "Python.mobility_training (1).executor": "Run",
-    "Python.mobility_training.executor": "Run",
-    "Python.multi_model_generate_data.executor": "Run",
-    "Python.random_waypoint.executor": "Debug",
-    "Python.simu_test.executor": "Run",
-    "Python.simulation_para.executor": "Debug",
-    "Python.test (1).executor": "Run",
-    "Python.test.executor": "Run",
-    "Python.test1.executor": "Run",
-    "Python.testing (1).executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.training (1).executor": "Run",
-    "Python.training (2).executor": "Run",
-    "Python.training.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/mahmoud/PycharmProjects/DRL Cell-Free Massive MIMO Uplink Power Control",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python._options.executor&quot;: &quot;Run&quot;,
+    &quot;Python.benchmark.executor&quot;: &quot;Run&quot;,
+    &quot;Python.computational_complexity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hparam_opt (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.hparam_opt.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.hparam_opt_copy.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.hyperparams.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.mobility_env.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mobility_training (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.mobility_training.executor&quot;: &quot;Run&quot;,
+    &quot;Python.multi_model_generate_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.random_waypoint.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.simu_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.simulation_para.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.test (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.training (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.training (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.training.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/mahmoud/PycharmProjects/DRL Cell-Free Massive MIMO Uplink Power Control&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -294,79 +290,8 @@
       <workItem from="1704539076151" duration="5258000" />
       <workItem from="1704558840885" duration="2787000" />
       <workItem from="1704561632678" duration="10326000" />
-      <workItem from="1704604773938" duration="7004000" />
-    </task>
-    <task id="LOCAL-00079" summary="relocate">
-      <option name="closed" value="true" />
-      <created>1703806203928</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
-      <option name="project" value="LOCAL" />
-      <updated>1703806203928</updated>
-    </task>
-    <task id="LOCAL-00080" summary="updated">
-      <option name="closed" value="true" />
-      <created>1703806263425</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1703806263425</updated>
-    </task>
-    <task id="LOCAL-00081" summary="updating">
-      <option name="closed" value="true" />
-      <created>1703806296450</created>
-      <option name="number" value="00081" />
-      <option name="presentableId" value="LOCAL-00081" />
-      <option name="project" value="LOCAL" />
-      <updated>1703806296450</updated>
-    </task>
-    <task id="LOCAL-00082" summary="updated">
-      <option name="closed" value="true" />
-      <created>1703806306715</created>
-      <option name="number" value="00082" />
-      <option name="presentableId" value="LOCAL-00082" />
-      <option name="project" value="LOCAL" />
-      <updated>1703806306715</updated>
-    </task>
-    <task id="LOCAL-00083" summary="add">
-      <option name="closed" value="true" />
-      <created>1703821329935</created>
-      <option name="number" value="00083" />
-      <option name="presentableId" value="LOCAL-00083" />
-      <option name="project" value="LOCAL" />
-      <updated>1703821329935</updated>
-    </task>
-    <task id="LOCAL-00084" summary="add">
-      <option name="closed" value="true" />
-      <created>1703933709446</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1703933709446</updated>
-    </task>
-    <task id="LOCAL-00085" summary="moved">
-      <option name="closed" value="true" />
-      <created>1703933725079</created>
-      <option name="number" value="00085" />
-      <option name="presentableId" value="LOCAL-00085" />
-      <option name="project" value="LOCAL" />
-      <updated>1703933725079</updated>
-    </task>
-    <task id="LOCAL-00086" summary="add">
-      <option name="closed" value="true" />
-      <created>1703933737285</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
-      <option name="project" value="LOCAL" />
-      <updated>1703933737285</updated>
-    </task>
-    <task id="LOCAL-00087" summary="delete">
-      <option name="closed" value="true" />
-      <created>1703933751439</created>
-      <option name="number" value="00087" />
-      <option name="presentableId" value="LOCAL-00087" />
-      <option name="project" value="LOCAL" />
-      <updated>1703933751439</updated>
+      <workItem from="1704604773938" duration="19958000" />
+      <workItem from="1704918805575" duration="5350000" />
     </task>
     <task id="LOCAL-00088" summary="reformat">
       <option name="closed" value="true" />
@@ -688,19 +613,85 @@
       <option name="project" value="LOCAL" />
       <updated>1704579541629</updated>
     </task>
-    <option name="localTasksCounter" value="128" />
+    <task id="LOCAL-00128" summary="capture algos duration to output solution">
+      <option name="closed" value="true" />
+      <created>1704630027503</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630027503</updated>
+    </task>
+    <task id="LOCAL-00129" summary="add">
+      <option name="closed" value="true" />
+      <created>1704630043129</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630043129</updated>
+    </task>
+    <task id="LOCAL-00130" summary="update">
+      <option name="closed" value="true" />
+      <created>1704630065296</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630065297</updated>
+    </task>
+    <task id="LOCAL-00131" summary="add ComputationalComplexityBenchmark class">
+      <option name="closed" value="true" />
+      <created>1704630091919</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630091919</updated>
+    </task>
+    <task id="LOCAL-00132" summary="add duration_benchmarking func">
+      <option name="closed" value="true" />
+      <created>1704630132970</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630132970</updated>
+    </task>
+    <task id="LOCAL-00133" summary="update">
+      <option name="closed" value="true" />
+      <created>1704630147633</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1704630147634</updated>
+    </task>
+    <task id="LOCAL-00134" summary="deleted">
+      <option name="closed" value="true" />
+      <created>1704925393070</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1704925393070</updated>
+    </task>
+    <task id="LOCAL-00135" summary="remove unused model">
+      <option name="closed" value="true" />
+      <created>1704925545485</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1704925545485</updated>
+    </task>
+    <task id="LOCAL-00136" summary="update func doc">
+      <option name="closed" value="true" />
+      <created>1704925569840</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
+      <option name="project" value="LOCAL" />
+      <updated>1704925569840</updated>
+    </task>
+    <option name="localTasksCounter" value="137" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updating" />
-    <MESSAGE value="delete" />
-    <MESSAGE value="reformat" />
-    <MESSAGE value="deleted" />
-    <MESSAGE value="add simulation method" />
-    <MESSAGE value="updated" />
     <MESSAGE value="add plot_cdf_pdf, compare_models, compare_cdfs_ks, determine_best_model_ks, compare_cdfs_emd, rank_models_emd, compare_cdfs_moments, rank_models_moments functions" />
     <MESSAGE value="added" />
     <MESSAGE value="moved" />
@@ -716,11 +707,17 @@
     <MESSAGE value="remove log_std_init" />
     <MESSAGE value="add new models" />
     <MESSAGE value="re-write as class" />
-    <MESSAGE value="add" />
     <MESSAGE value="add plot_sinr_heatmap func&#10;remove geo mean" />
     <MESSAGE value="add seaborn" />
+    <MESSAGE value="capture algos duration to output solution" />
+    <MESSAGE value="add" />
+    <MESSAGE value="add ComputationalComplexityBenchmark class" />
+    <MESSAGE value="add duration_benchmarking func" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="deleted" />
+    <MESSAGE value="remove unused model" />
+    <MESSAGE value="update func doc" />
+    <option name="LAST_COMMIT_MESSAGE" value="update func doc" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
