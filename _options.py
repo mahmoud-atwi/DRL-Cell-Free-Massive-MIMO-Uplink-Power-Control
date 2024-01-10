@@ -8,7 +8,6 @@ from torch.optim import SGD
 
 # MobilityCFmMIMOEnv-delta_cf_se-v0
 # MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0
-# MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v1
 # MobilityCFmMIMOEnv-log_delta_cf_se-v0
 # MobilityCFmMIMOEnv-relative_cf_se-v0
 # MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0
@@ -31,17 +30,16 @@ def select_reward_option():
         "5": "Sum SE",
         "6": "Delta CF SE",
         "7": "Exp Delta CF SE Clip",
-        "8": "Exp Delta CF SE Clip V1",
-        "9": "Log Delta CF SE",
-        "10": "Relative CF SE",
-        "11": "Exp Relative CF SE Clip",
-        "12": "Log Relative CF SE",
-        "13": "Delta SINR",
-        "14": "Exp Delta SINR Clip",
-        "15": "Log Delta SINR",
-        "16": "Relative SINR",
-        "17": "Exp Relative SINR Clip",
-        "18": "Log Relative SINR",
+        "8": "Log Delta CF SE",
+        "9": "Relative CF SE",
+        "10": "Exp Relative CF SE Clip",
+        "11": "Log Relative CF SE",
+        "12": "Delta SINR",
+        "13": "Exp Delta SINR Clip",
+        "14": "Log Delta SINR",
+        "15": "Relative SINR",
+        "16": "Exp Relative SINR Clip",
+        "17": "Log Relative SINR",
     }
 
     # Map of user selection to environment name
@@ -53,17 +51,16 @@ def select_reward_option():
         "5": ("MobilityCFmMIMOEnv-sum_se-v0", "sum_se", None, None),
         "6": ("MobilityCFmMIMOEnv-delta_cf_se-v0", None, "delta", "cf_se"),
         "7": ("MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0", None, "exp_delta_clip", "cf_se"),
-        "8": ("MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v1", None, "exp_delta_clip", "cf_se"),
-        "9": ("MobilityCFmMIMOEnv-log_delta_cf_se-v0", None, "log_delta", "cf_se"),
-        "10": ("MobilityCFmMIMOEnv-relative_cf_se-v0", None, "relative", "cf_se"),
-        "11": ("MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0", None, "exp_relative_clip", "cf_se"),
-        "12": ("MobilityCFmMIMOEnv-log_relative_cf_se-v0", None, "log_relative", "cf_se"),
-        "13": ("MobilityCFmMIMOEnv-delta_sinr-v0", None, "delta", "sinr"),
-        "14": ("MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0", None, "exp_delta_clip", "sinr"),
-        "15": ("MobilityCFmMIMOEnv-log_delta_sinr-v0", None, "log_delta", "sinr"),
-        "16": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
-        "17": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
-        "18": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
+        "8": ("MobilityCFmMIMOEnv-log_delta_cf_se-v0", None, "log_delta", "cf_se"),
+        "9": ("MobilityCFmMIMOEnv-relative_cf_se-v0", None, "relative", "cf_se"),
+        "10": ("MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0", None, "exp_relative_clip", "cf_se"),
+        "11": ("MobilityCFmMIMOEnv-log_relative_cf_se-v0", None, "log_relative", "cf_se"),
+        "12": ("MobilityCFmMIMOEnv-delta_sinr-v0", None, "delta", "sinr"),
+        "13": ("MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0", None, "exp_delta_clip", "sinr"),
+        "14": ("MobilityCFmMIMOEnv-log_delta_sinr-v0", None, "log_delta", "sinr"),
+        "15": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
+        "16": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
+        "17": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
     }
 
     while True:
