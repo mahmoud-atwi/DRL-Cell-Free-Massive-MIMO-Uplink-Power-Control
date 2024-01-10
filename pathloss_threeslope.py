@@ -5,6 +5,8 @@ from typing import Union, Iterable
 def path_loss_three_slope(distances_vector: Union[np.ndarray, Iterable[float]]) -> np.ndarray:
     """
     Calculates the path loss using a three-slope model over a given set of distances.
+    implementation of three-slope path-loss model based on "Cell-Free Massive MIMO versus Small Cells"
+    link: https://arxiv.org/pdf/1602.08232.pdf
 
     This function computes the path loss for each distance in the input vector according to a three-slope
     path loss model. The model divides the range of distances into three segments, each with a different
