@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update">
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update doc">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MobilityCFmMIMOEnv.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/MobilityCFmMIMOEnv.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/benchmarking.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hparam_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/hparam_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/training.py" beforeDir="false" afterPath="$PROJECT_DIR$/training.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobility_training.py" beforeDir="false" afterPath="$PROJECT_DIR$/mobility_training.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/multi_model_generate_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/multi_model_generate_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/single_model_generate_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_model_generate_data.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,10 +52,11 @@
     "Python.mobility_env.executor": "Run",
     "Python.mobility_training (1).executor": "Run",
     "Python.mobility_training.executor": "Run",
-    "Python.multi_model_generate_data.executor": "Run",
+    "Python.multi_model_generate_data.executor": "Debug",
     "Python.random_waypoint.executor": "Debug",
     "Python.simu_test.executor": "Run",
     "Python.simulation_para.executor": "Debug",
+    "Python.single_model_generate_data.executor": "Run",
     "Python.test (1).executor": "Run",
     "Python.test.executor": "Run",
     "Python.test1.executor": "Run",
@@ -116,30 +120,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="computational_complexity" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.11 (DRL Cell-Free Massive MIMO Uplink Power Control)" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/computational_complexity.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="true" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="hparam_opt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
       <option name="ENV_FILES" value="" />
@@ -156,6 +136,30 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/hparam_opt.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="true" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="mobility_training" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (DRL Cell-Free Massive MIMO Uplink Power Control)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mobility_training.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="true" />
@@ -188,6 +192,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="single_model_generate_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (DRL Cell-Free Massive MIMO Uplink Power Control)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/single_model_generate_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="true" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
       <option name="ENV_FILES" value="" />
@@ -212,44 +240,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="training" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.11 (DRL Cell-Free Massive MIMO Uplink Power Control)" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/training.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="true" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Python.computational_complexity" />
+      <item itemvalue="Python.mobility_training" />
+      <item itemvalue="Python.single_model_generate_data" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.hparam_opt" />
       <item itemvalue="Python.multi_model_generate_data" />
-      <item itemvalue="Python.training" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.hparam_opt" />
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.computational_complexity" />
         <item itemvalue="Python.multi_model_generate_data" />
-        <item itemvalue="Python.training" />
+        <item itemvalue="Python.single_model_generate_data" />
+        <item itemvalue="Python.mobility_training" />
+        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -295,39 +299,7 @@
       <workItem from="1704561632678" duration="10326000" />
       <workItem from="1704604773938" duration="19958000" />
       <workItem from="1704918805575" duration="5379000" />
-      <workItem from="1704985558943" duration="2179000" />
-    </task>
-    <task id="LOCAL-00092" summary="added">
-      <option name="closed" value="true" />
-      <created>1704142125820</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
-      <option name="project" value="LOCAL" />
-      <updated>1704142125820</updated>
-    </task>
-    <task id="LOCAL-00093" summary="moved">
-      <option name="closed" value="true" />
-      <created>1704142154257</created>
-      <option name="number" value="00093" />
-      <option name="presentableId" value="LOCAL-00093" />
-      <option name="project" value="LOCAL" />
-      <updated>1704142154257</updated>
-    </task>
-    <task id="LOCAL-00094" summary="updated">
-      <option name="closed" value="true" />
-      <created>1704142175876</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
-      <option name="project" value="LOCAL" />
-      <updated>1704142175876</updated>
-    </task>
-    <task id="LOCAL-00095" summary="updated">
-      <option name="closed" value="true" />
-      <created>1704142198206</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
-      <option name="project" value="LOCAL" />
-      <updated>1704142198206</updated>
+      <workItem from="1704985558943" duration="14775000" />
     </task>
     <task id="LOCAL-00096" summary="add simulation method">
       <option name="closed" value="true" />
@@ -689,16 +661,45 @@
       <option name="project" value="LOCAL" />
       <updated>1704985602113</updated>
     </task>
-    <option name="localTasksCounter" value="141" />
+    <task id="LOCAL-00141" summary="update &quot;log_delta&quot; reward">
+      <option name="closed" value="true" />
+      <created>1705001347033</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1705001347033</updated>
+    </task>
+    <task id="LOCAL-00142" summary="remove comment">
+      <option name="closed" value="true" />
+      <created>1705001378213</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1705001378213</updated>
+    </task>
+    <task id="LOCAL-00143" summary="update">
+      <option name="closed" value="true" />
+      <created>1705001404650</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1705001404650</updated>
+    </task>
+    <task id="LOCAL-00144" summary="update doc">
+      <option name="closed" value="true" />
+      <created>1705004148238</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1705004148238</updated>
+    </task>
+    <option name="localTasksCounter" value="145" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add plot_cdf_pdf, compare_models, compare_cdfs_ks, determine_best_model_ks, compare_cdfs_emd, rank_models_emd, compare_cdfs_moments, rank_models_moments functions" />
-    <MESSAGE value="added" />
-    <MESSAGE value="moved" />
     <MESSAGE value="add operation option" />
     <MESSAGE value="add the capture of CF SE" />
     <MESSAGE value="add CF SE based rewards" />
@@ -720,8 +721,11 @@
     <MESSAGE value="remove unused model" />
     <MESSAGE value="update func doc" />
     <MESSAGE value="add" />
+    <MESSAGE value="update &quot;log_delta&quot; reward" />
+    <MESSAGE value="remove comment" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="update doc" />
+    <option name="LAST_COMMIT_MESSAGE" value="update doc" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -736,7 +740,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$simulation_para.coverage" NAME="simulation_para Coverage Results" MODIFIED="1703179122946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$training__1_.coverage" NAME="training (1) Coverage Results" MODIFIED="1702805799876" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multi Input Env" />
-    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$mobility_training.coverage" NAME="mobility_training Coverage Results" MODIFIED="1703783645189" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
+    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$mobility_training.coverage" NAME="mobility_training Coverage Results" MODIFIED="1705002911794" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$training__2_.coverage" NAME="training (2) Coverage Results" MODIFIED="1703171630062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$testing.coverage" NAME="testing Coverage Results" MODIFIED="1702800945045" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Single Input Env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1703409150947" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -751,9 +755,10 @@
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$mobility_training__1_.coverage" NAME="mobility_training (1) Coverage Results" MODIFIED="1703797141580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$simu_test.coverage" NAME="multi_model_generate_data Coverage Results" MODIFIED="1704112588062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1704111982177" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$multi_model_generate_data.coverage" NAME="multi_model_generate_data Coverage Results" MODIFIED="1704458806841" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$multi_model_generate_data.coverage" NAME="multi_model_generate_data Coverage Results" MODIFIED="1705004467268" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1702933017085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$random_waypoint.coverage" NAME="random_waypoint Coverage Results" MODIFIED="1703010873941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hparam_opt.coverage" NAME="hparam_opt Coverage Results" MODIFIED="1704986710793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$single_model_generate_data.coverage" NAME="single_model_generate_data Coverage Results" MODIFIED="1705004391430" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
