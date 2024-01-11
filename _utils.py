@@ -18,6 +18,7 @@ from scipy.stats import stats
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.vec_env import VecEnv
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 warnings.simplefilter('error', RuntimeWarning)
 
@@ -917,13 +918,13 @@ def calculate_area_throughput(df: pd.DataFrame, bandwidth_hz: float, square_side
         return np.array(area_throughput_per_iteration)
 
 
-def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, grid_size=(100, 100),
+def plot_sinr_heatmap(title, sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, grid_size=(100, 100),
                       rounding_precision=0, colorbar_ticks=None):
     """
     Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
     and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
 
-
+    :param title: Title for the plot.
     :param sinr_df: A DataFrame of SINR values in mW.
     :param location_df: A DataFrame of UE locations in 'x+yj' string format.
     :param ap_location_df: A DataFrame of AP locations in 'x+yj' string format.
@@ -936,7 +937,7 @@ def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, g
     if sinr_df.shape != location_df.shape:
         raise ValueError("SINR DataFrame and location DataFrame must have the same shape.")
 
-    if colorbar_ticks == 'custom':
+    if colorbar_ticks == 'default':
         # Customized colorbar ticks
         colorbar_ticks = [
             (-30, '-30 dB'),
@@ -982,7 +983,7 @@ def plot_sinr_heatmap(sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, g
     plt.figure(figsize=(10, 8))
     _colors = sns.color_palette("hls", 60)
     heatmap = sns.heatmap(grid_data, vmin=vmin, vmax=vmax, annot=False, cmap=_colors, mask=grid_data.isnull())
-    plt.title("SINR Heatmap with Grid (dB)")
+    plt.title(f"SINR Heatmap with Grid (dB)- {title}")
 
     # Normalize and plot AP locations
     for location_str in ap_location_df.iloc[:, 0]:
@@ -1033,3 +1034,120 @@ def duration_benchmarking(duration_data):
         _results.append(_stats)
 
     return pd.DataFrame(_results)
+
+
+def generate_colorbar_ticks(vmin: int, vmax: int, spacing: int) -> List[Tuple[int, str]]:
+    """
+    Generate a list of tuples for colorbar ticks.
+
+    Args:
+    vmin (int): Minimum value for the colorbar.
+    vmax (int): Maximum value for the colorbar.
+    spacing (int): Spacing between each tick on the colorbar.
+
+    Returns:
+    List[Tuple[int, str]]: Each tuple contains the value and its string representation with 'dB' suffix.
+    """
+    return [(v, f"{v} dB") for v in range(vmin, vmax + 1, spacing)]
+
+
+def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30, vmax=30,
+                      grid_size=(100, 100), rounding_precision=0, colorbar_ticks=None):
+    """
+    Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
+    and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
+
+    :param ax: The matplotlib axes to plot on.
+    :param title: Title for the plot.
+    :param sinr_df: A DataFrame of SINR values in mW.
+    :param location_df: A DataFrame of UE locations in 'x+yj' string format.
+    :param ap_location_df: A DataFrame of AP locations in 'x+yj' string format.
+    :param vmin: Minimum value for the colorbar.
+    :param vmax: Maximum value for the colorbar.
+    :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
+    :param rounding_precision: Number of decimal places to round coordinates.
+    :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
+    """
+    if sinr_df.shape != location_df.shape:
+        raise ValueError("SINR DataFrame and location DataFrame must have the same shape.")
+
+    sinr_df[sinr_df <= 0] = np.nan
+    sinr_df = 10 * np.log10(sinr_df)
+
+    # Create the DataFrame for plotting
+    data_list = []
+    for i in range(sinr_df.shape[0]):
+        for j in range(sinr_df.shape[1]):
+            location_str = location_df.iloc[i, j]
+            location = complex(location_str)
+            x, y = round(location.real, rounding_precision), round(location.imag, rounding_precision)
+            sinr_value = sinr_df.iloc[i, j]
+            if not np.isnan(sinr_value):
+                data_list.append({'x': x, 'y': y, 'SINR': sinr_value})
+
+    df = pd.DataFrame(data_list)
+    df['x_bin'] = pd.cut(df['x'], bins=np.linspace(df['x'].min(), df['x'].max(), grid_size[1]), labels=False)
+    df['y_bin'] = pd.cut(df['y'], bins=np.linspace(df['y'].min(), df['y'].max(), grid_size[0]), labels=False)
+
+    # Create the pivot table for heatmap
+    heatmap_data = df.pivot_table(values='SINR', index='y_bin', columns='x_bin', aggfunc='mean')
+
+    # Plot the heatmap
+    sns.heatmap(heatmap_data, ax=ax, vmin=vmin, vmax=vmax, cmap='viridis', cbar=False)
+
+    for location_str in ap_location_df.iloc[:, 0]:
+        ap_location = complex(location_str)
+        ap_x_norm = np.digitize(ap_location.real, np.linspace(df['x'].min(), df['x'].max(), grid_size[1])) - 1
+        ap_y_norm = np.digitize(ap_location.imag, np.linspace(df['y'].min(), df['y'].max(), grid_size[0])) - 1
+        ax.scatter(ap_x_norm, ap_y_norm, color='white', s=100, marker='2')
+
+    # Create an axis for the colorbar
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1)
+    if colorbar_ticks:
+        cbar = ax.figure.colorbar(ax.collections[0], cax=cax)
+        cbar.set_ticks([tick for tick, _ in colorbar_ticks])
+        cbar.set_ticklabels([label for _, label in colorbar_ticks])
+
+    # Set the title
+    ax.set_title(f'SINR Heat Map - {title}', pad=20)
+
+    # Optionally turn off the axes labels
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+
+
+def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.DataFrame,
+                       ap_location_df: pd.DataFrame, vmin: int = -30, vmax: int = 30,
+                       grid_size: Tuple[int, int] = (100, 100), rounding_precision: int = 0,
+                       colorbar_ticks: Optional[List[Tuple[int, str]]] = None) -> None:
+    """
+    Plot a series of SINR heatmaps based on provided dictionary of SINR values for each title.
+    The heatmaps are displayed in a 2-row grid layout.
+
+    :param dataframes: Dictionary of DataFrames with SINR values in mW, keyed by title.
+    :param location_df: DataFrame with UE locations in 'x+yj' string format, common for all plots.
+    :param ap_location_df: DataFrame of AP locations in 'x+yj' string format.
+    :param vmin: Minimum value for the colorbar.
+    :param vmax: Maximum value for the colorbar.
+    :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
+    :param rounding_precision: Number of decimal places to round coordinates.
+    :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
+    """
+    num_plots = len(dataframes)
+    num_cols = int(np.ceil(num_plots / 2))
+    fig, axes = plt.subplots(2, num_cols, figsize=(num_cols * 5, 10))  # Adjust the size as needed
+    axes = axes.flatten()
+
+    for i, (title, sinr_df) in enumerate(dataframes.items()):
+        ax = axes[i]
+        _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin, vmax, grid_size,
+                          rounding_precision, colorbar_ticks)
+
+    for j in range(i + 1, len(axes)):
+        axes[j].axis('off')  # Turn off unused subplots
+
+    plt.tight_layout()
+    plt.show()
