@@ -1,60 +1,91 @@
 import warnings
-import numpy as np
-import gymnasium as gym
-
-from time import time
-from gymnasium import spaces
 from collections import deque
-from scipy.stats import gmean
+from time import time
 from typing import Tuple, Optional
 
+import gymnasium as gym
+import numpy as np
+from gymnasium import spaces
+from scipy.stats import gmean
+
 import simulation_para as sim_para
+from _utils import generate_ap_locations, generate_ue_locations, calc_sinr
+from compute_spectral_efficiency import compute_se
+from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
 from random_waypoint import random_waypoint
 from simulation_setup import cf_mimo_simulation
-from compute_spectral_efficiency import compute_se
-from _utils import generate_ap_locations, generate_ue_locations, calc_sinr
-from power_optimization import power_opt_maxmin, power_opt_prod_sinr, power_opt_sum_rate
 
 
 class MobilityCFmMIMOEnv(gym.Env):
     """
-    A custom Gymnasium (Gym) environment for a Cell-Free Massive MIMO system.
+    A custom Gymnasium (Gym) environment for simulating a Cell-Free Massive MIMO system with user mobility and dynamic
+    power control.
 
-    This environment simulates a cell-free massive MIMO system, incorporating user mobility and dynamic
-    power control. The observation space consists of aggregated large-scale fading coefficients for each
-    user, and the action space involves adjusting uplink power levels for each user.
+    In this environment, the cell-free massive MIMO system dynamics are captured, including the movement of user
+    equipments (UEs) and adjustment of their uplink power levels. The observation space consists of large-scale fading
+    coefficients aggregated for each UE, and the action space involves adjusting the uplink power levels for each UE.
 
     Attributes:
-        L (int): Number of APs.
-        K (int): Number of UEs.
+        L (int): Number of Access Points (APs).
+        K (int): Number of User Equipments (UEs).
         tau_p (int): Number of orthogonal pilots.
-        max_power (float): Maximum transmit power.
-        min_power (float): Minimum transmit power.
-        initial_power (float): Initial power setting for simulations.
-        UEs_power (Optional[np.ndarray]): Uplink power levels for each user.
-        APs_positions (np.ndarray): Positions of the APs.
-        UEs_positions (np.ndarray): Positions of the UEs.
-        square_length (float): Length of the area square in meters.
-        decorr (float): Decorrelation distance for shadow fading.
-        sigma_sf (float): Shadow fading standard deviation in dB.
-        noise_variance_dbm (float): Noise variance in dBm.
+        max_power (float): Maximum transmit power for UEs.
+        min_power (float): Minimum transmit power for UEs.
+        initial_power (float): Initial power setting for UEs at the start of simulations.
+        UEs_power (Optional[np.ndarray]): Current uplink power levels for each UE.
+        APs_positions (np.ndarray): Positions of the APs in the environment.
+        UEs_positions (np.ndarray): Current positions of the UEs.
+        square_length (float): Length of the square area in which APs and UEs are located (meters).
+        decorr (float): Decorrelation distance for shadow fading (meters).
+        sigma_sf (float): Standard deviation of shadow fading (dB).
+        noise_variance_dbm (float): Noise variance in the system (dBm).
         delta (float): Shadow fading decorrelation parameter.
-        UEs_mobility (bool): Flag to enable mobility for UEs.
-        relocate_APs_on_reset (bool): Flag to relocate APs on environment reset.
-        relocate_UEs_on_reset (bool): Flag to relocate UEs on environment reset.
-        area_bounds (Tuple[float, float, float, float]): Bounds of the simulation area.
-        reward_method (str): Method used to calculate the reward. It can be one of the following:
-            - 'channel_capacity': Calculates reward based on channel capacity, using the sum of logarithmic
-              Signal-to-Interference-plus-Noise Ratios (SINRs).
+        UEs_mobility (bool): Indicates if mobility is enabled for UEs.
+        relocate_APs_on_reset (bool): If true, APs are relocated when the environment is reset.
+        relocate_UEs_on_reset (bool): If true, UEs are relocated when the environment is reset.
+        area_bounds (Tuple[float, float, float, float]): Bounds of the simulation area (x_min, x_max, y_min, y_max).
+        reward_method (str): Selected method for reward calculation.
+            - 'channel_capacity': Calculates reward based on channel capacity, using the sum of logarithmic Signal-to-Interference-plus-Noise Ratios (SINRs).
             - 'min_se': Uses the minimum spectral efficiency among all users, emphasizing the worst-case performance.
-            - 'mean_se': Employs the average spectral efficiency across all users, providing a balance between
-              fairness and efficiency.
+            - 'mean_se': Employs the average spectral efficiency across all users, providing a balance between fairness and efficiency.
             - 'sum_se': Considers the sum of spectral efficiencies of all users, prioritizing total system throughput.
-            - 'geo_mean_se': Uses the geometric mean of spectral efficiencies, offering a compromise between
-              fairness and total throughput.
-        action_space (spaces.Box): The action space representing UL power levels.
-        observation_space (spaces.Box): The observation space representing B_k values.
-        state (np.ndarray): Current state of the environment.
+            - 'geo_mean_se': Uses the geometric mean of spectral efficiencies, offering a compromise between fairness and total throughput.
+            - 'cf_min_se': Focuses on the minimum spectral efficiency among all users, with an emphasis on the worst-case scenario in a cell-free context.
+            - 'cf_mean_se': Averages the spectral efficiency across all users, balancing between fairness and efficiency in a cell-free setting.
+            - 'cf_sum_se': Summarizes the spectral efficiencies of all users, highlighting the overall throughput in a cell-free system.
+            - 'cf_geo_mean_se': Calculates the geometric mean of spectral efficiencies, balancing fairness and throughput in a cell-free context.
+        temporal_reward_method (str): Selected method for temporal reward calculation.
+            - 'delta': Calculates the reward based on the difference between the current and the historical data. temporal_data is used to define the historical data.
+            - 'relative': Calculates the reward based on the ratio between the current and the historical data. temporal_data is used to define the historical data.
+            - 'exp_delta_clip': Calculates the reward based on the exponential of the difference between the current and the historical data, with clipping. temporal_data is used to define the historical data.
+            - 'exp_relative_clip': Calculates the reward based on the exponential of the ratio between the current and the historical data, with clipping. temporal_data is used to define the historical data.
+            - 'log_delta': Calculates the reward based on the logarithm of the difference between the current and the historical data. temporal_data is used to define the historical data.
+            - 'log_relative': Calculates the reward based on the logarithm of the ratio between the current and the historical data. temporal_data is used to define the historical data.
+        temporal_reward_operation (str): Operation used in temporal reward calculation (e.g., 'mean', 'sum').
+        temporal_reward_max (float): Maximum value for temporal reward.
+        temporal_data (str): Type of data used for temporal reward calculation.
+            - 'cf_se': Cell-free spectral efficiency, focusing on the spectral efficiency in a cell-free MIMO context.
+            - 'sinr': Signal-to-Interference-plus-Noise Ratio, emphasizing the SINR values for the calculation.
+        temporal_window_size (int): Size of the window for averaging in temporal reward calculation.
+        temporal_history (deque): Historical data used for temporal reward calculation.
+        action_space (spaces.Box): The action space representing UL power levels for each UE.
+        observation_space (spaces.Box): The observation space representing large-scale fading coefficients (B_k values).
+        state (np.ndarray): Current state of the environment, representing the large-scale fading coefficients.
+
+    Methods:
+        reset: Resets the environment to its initial state.
+        step: Advances the environment by one time step based on the given action.
+        initialize_state: Initializes the state of the environment.
+        update_state: Updates the state of the environment based on the current UE positions and power levels.
+        calculate_reward: Calculates the reward based on the current state and selected reward method.
+        _calculate_temporal_reward: Calculates the temporal reward based on historical data.
+        calculate: Applies an action and calculates the resulting state without updating the environment.
+        maxmin_algo: Implements the max-min power control algorithm.
+        maxprod_algo: Implements the max-product SINR power control algorithm.
+        maxsumrate_algo: Implements the max-sum-rate power control algorithm.
+        update_ue_positions: Updates the positions of UEs based on mobility.
+        simulate: Simulates the environment for a given action and UE positions.
+        close: Closes the environment and performs any necessary cleanup.
     """
 
     def __init__(self, **kwargs):
@@ -84,8 +115,7 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         # raise error if both reward_method and temporal_reward_method are provided
         if self.reward_method and self.temporal_reward_method:
-            raise ValueError(
-                """
+            raise ValueError("""
                 Only one reward method can be used at a time. 
                 Please choose either reward_method or temporal_reward_method.
                 
@@ -105,8 +135,7 @@ class MobilityCFmMIMOEnv(gym.Env):
                     4) exp_relative_clip
                     5) log_delta
                     6) log_relative'
-                """
-            )
+                """)
 
         methods = ["delta", "relative", "exp_delta_clip", "exp_relative_clip", "log_delta", "log_relative"]
         if not self.eval:
@@ -256,8 +285,7 @@ class MobilityCFmMIMOEnv(gym.Env):
                 _sinr = calc_sinr(self.UEs_power, signal, interference)
                 return self._calculate_temporal_reward(_sinr)
             else:
-                warnings.warn(
-                    f"Temporal data {self.temporal_data} not supported. Falling back to spectral efficiency.")
+                warnings.warn(f"Temporal data {self.temporal_data} not supported. Falling back to spectral efficiency.")
                 self.temporal_data = "cf_se"
                 return self._calculate_temporal_reward(cf_spectral_efficiency)
         else:
@@ -392,13 +420,11 @@ class MobilityCFmMIMOEnv(gym.Env):
         if not lagging_spectral_efficiency:
             # Recalculate new B_k, signal and interference based on the new UL power
             _new_Beta_K, _new_signal, _new_interference, *_ = cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                                                                 self.max_power,
-                                                                                 _allocated_UEs_power,
-                                                                                 self.APs_positions,
-                                                                                 self.UEs_positions, self.square_length,
-                                                                                 self.decorr, self.sigma_sf,
-                                                                                 self.noise_variance_dbm, self.delta,
-                                                                                 pilot_index, beta_val)
+                                                                                 self.max_power, _allocated_UEs_power,
+                                                                                 self.APs_positions, self.UEs_positions,
+                                                                                 self.square_length, self.decorr,
+                                                                                 self.sigma_sf, self.noise_variance_dbm,
+                                                                                 self.delta, pilot_index, beta_val)
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
             _info['interference'] = _new_interference
@@ -430,13 +456,9 @@ class MobilityCFmMIMOEnv(gym.Env):
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
-                cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                   self.max_power,
-                                   _opt_power, self.APs_positions,
-                                   self.UEs_positions, self.square_length,
-                                   self.decorr, self.sigma_sf,
-                                   self.noise_variance_dbm, self.delta,
-                                   pilot_index, beta_val))
+                cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power, _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length, self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta, pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
@@ -470,13 +492,9 @@ class MobilityCFmMIMOEnv(gym.Env):
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
-                cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                   self.max_power,
-                                   _opt_power, self.APs_positions,
-                                   self.UEs_positions, self.square_length,
-                                   self.decorr, self.sigma_sf,
-                                   self.noise_variance_dbm, self.delta,
-                                   pilot_index, beta_val))
+                cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power, _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length, self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta, pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
@@ -510,13 +528,9 @@ class MobilityCFmMIMOEnv(gym.Env):
             if ues_positions is not None:
                 self.UEs_positions = ues_positions
             _new_Beta_K, _new_signal, _new_interference, _cf_spectral_efficiency, *_ = (
-                cf_mimo_simulation(self.L, self.K, self.tau_p,
-                                   self.max_power,
-                                   _opt_power, self.APs_positions,
-                                   self.UEs_positions, self.square_length,
-                                   self.decorr, self.sigma_sf,
-                                   self.noise_variance_dbm, self.delta,
-                                   pilot_index, beta_val))
+                cf_mimo_simulation(self.L, self.K, self.tau_p, self.max_power, _opt_power, self.APs_positions,
+                                   self.UEs_positions, self.square_length, self.decorr, self.sigma_sf,
+                                   self.noise_variance_dbm, self.delta, pilot_index, beta_val))
 
             _info['Beta_K'] = _new_Beta_K
             _info['signal'] = _new_signal
