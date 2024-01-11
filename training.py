@@ -118,6 +118,3 @@ class RLModelTrainer:
 if __name__ == '__main__':
     trainer = RLModelTrainer()
     trainer.train()
-
-
-# 14 Exp Delta SINR Clip: failed
