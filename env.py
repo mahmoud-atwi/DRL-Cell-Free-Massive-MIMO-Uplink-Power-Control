@@ -345,8 +345,24 @@ class MobilityCFmMIMOEnv(gym.Env):
         elif _method == "log_delta":
             delta = current - avg_history
             constant_offset = 1e-6
-            log_delta = np.log(np.abs(delta) + constant_offset)
-            temporal_reward = operations[_operation](log_delta)
+            # log_delta = np.log(np.abs(delta) + constant_offset)
+            # temporal_reward = operations[_operation](log_delta)
+
+            # Separate positive and negative deltas
+            positive_deltas = np.maximum(delta, 0) + constant_offset
+            negative_deltas = -np.minimum(delta, 0) + constant_offset
+
+            # Calculate log for positive and negative deltas
+            log_positive_deltas = np.log(positive_deltas)
+            log_negative_deltas = np.log(negative_deltas)
+
+            # Calculate rewards for positive and negative deltas
+            r_plus = np.sum(log_positive_deltas) / np.count_nonzero(delta > 0) if np.count_nonzero(delta > 0) > 0 else 0
+            r_minus = np.sum(log_negative_deltas) / np.count_nonzero(delta < 0) if np.count_nonzero(
+                delta < 0) > 0 else 0
+
+            # Final temporal reward
+            temporal_reward = r_plus - r_minus
             return temporal_reward.astype(np.float32)
 
         elif _method == "log_relative":
