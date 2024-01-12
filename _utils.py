@@ -919,7 +919,7 @@ def calculate_area_throughput(df: pd.DataFrame, bandwidth_hz: float, square_side
 
 
 def plot_sinr_heatmap(title, sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, grid_size=(100, 100),
-                      rounding_precision=0, colorbar_ticks=None):
+                      rounding_precision=0, colorbar_ticks=None, filter_min=None, filter_max=None):
     """
     Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
     and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
@@ -933,6 +933,8 @@ def plot_sinr_heatmap(title, sinr_df, location_df, ap_location_df, vmin=-30, vma
     :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
     :param rounding_precision: Number of decimal places to round coordinates.
     :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
+    :param filter_min: Minimum SINR value to include in the heatmap.
+    :param filter_max: Maximum SINR value to include in the heatmap.
     """
     if sinr_df.shape != location_df.shape:
         raise ValueError("SINR DataFrame and location DataFrame must have the same shape.")
@@ -979,6 +981,11 @@ def plot_sinr_heatmap(title, sinr_df, location_df, ap_location_df, vmin=-30, vma
 
     # Calculate mean SINR for each grid cell
     grid_data = df.groupby(['y_norm', 'x_norm'], observed=True).SINR.mean().unstack()  # NaN for empty cells
+    # Apply filtering based on filter_min and filter_max
+    if filter_min is not None:
+        grid_data[grid_data < filter_min] = np.nan
+    if filter_max is not None:
+        grid_data[grid_data > filter_max] = np.nan
 
     plt.figure(figsize=(10, 8))
     _colors = sns.color_palette("hls", 60)
@@ -1051,8 +1058,8 @@ def generate_colorbar_ticks(vmin: int, vmax: int, spacing: int) -> List[Tuple[in
     return [(v, f"{v} dB") for v in range(vmin, vmax + 1, spacing)]
 
 
-def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30, vmax=30,
-                      grid_size=(100, 100), rounding_precision=0, colorbar_ticks=None):
+def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30, vmax=30, grid_size=(100, 100),
+                       rounding_precision=0, colorbar_ticks=None, filter_min=None, filter_max=None):
     """
     Plot a heatmap of SINR values in dB based on UE locations with reduced granularity, AP locations,
     and display mean SINR in each grid cell, leaving empty areas blank. Allows customization of colorbar ticks.
@@ -1067,6 +1074,8 @@ def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30
     :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
     :param rounding_precision: Number of decimal places to round coordinates.
     :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
+    :param filter_min: Minimum SINR value to include in the heatmap.
+    :param filter_max: Maximum SINR value to include in the heatmap.
     """
     if sinr_df.shape != location_df.shape:
         raise ValueError("SINR DataFrame and location DataFrame must have the same shape.")
@@ -1092,6 +1101,12 @@ def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30
     # Create the pivot table for heatmap
     heatmap_data = df.pivot_table(values='SINR', index='y_bin', columns='x_bin', aggfunc='mean')
 
+    # Apply filtering based on filter_min and filter_max
+    if filter_min is not None:
+        heatmap_data[heatmap_data < filter_min] = np.nan
+    if filter_max is not None:
+        heatmap_data[heatmap_data > filter_max] = np.nan
+
     # Plot the heatmap
     sns.heatmap(heatmap_data, ax=ax, vmin=vmin, vmax=vmax, cmap='viridis', cbar=False)
 
@@ -1099,7 +1114,7 @@ def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30
         ap_location = complex(location_str)
         ap_x_norm = np.digitize(ap_location.real, np.linspace(df['x'].min(), df['x'].max(), grid_size[1])) - 1
         ap_y_norm = np.digitize(ap_location.imag, np.linspace(df['y'].min(), df['y'].max(), grid_size[0])) - 1
-        ax.scatter(ap_x_norm, ap_y_norm, color='white', s=100, marker='2')
+        ax.scatter(ap_x_norm, ap_y_norm, color='black', s=100, marker='2')
 
     # Create an axis for the colorbar
     divider = make_axes_locatable(ax)
@@ -1120,9 +1135,9 @@ def _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin=-30
 
 
 def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.DataFrame,
-                       ap_location_df: pd.DataFrame, vmin: int = -30, vmax: int = 30,
-                       grid_size: Tuple[int, int] = (100, 100), rounding_precision: int = 0,
-                       colorbar_ticks: Optional[List[Tuple[int, str]]] = None) -> None:
+                       ap_location_df: pd.DataFrame, vmin: int = -30, vmax: int = 30, filter_min: Optional[int] = None,
+                       filter_max: Optional[int] = None, grid_size: Tuple[int, int] = (100, 100),
+                       rounding_precision: int = 0, colorbar_ticks: Optional[List[Tuple[int, str]]] = None) -> None:
     """
     Plot a series of SINR heatmaps based on provided dictionary of SINR values for each title.
     The heatmaps are displayed in a 2-row grid layout.
@@ -1132,6 +1147,8 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
     :param ap_location_df: DataFrame of AP locations in 'x+yj' string format.
     :param vmin: Minimum value for the colorbar.
     :param vmax: Maximum value for the colorbar.
+    :param filter_min: Minimum SINR value to include in the heatmap.
+    :param filter_max: Maximum SINR value to include in the heatmap.
     :param grid_size: Tuple specifying the grid size (num_rows, num_cols).
     :param rounding_precision: Number of decimal places to round coordinates.
     :param colorbar_ticks: List of tuples for colorbar ticks and labels [(tick_value, 'label'), ...].
@@ -1143,8 +1160,8 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
 
     for i, (title, sinr_df) in enumerate(dataframes.items()):
         ax = axes[i]
-        _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin, vmax, grid_size,
-                          rounding_precision, colorbar_ticks)
+        _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin, vmax, grid_size, rounding_precision,
+                           colorbar_ticks, filter_min, filter_max)
 
     for j in range(i + 1, len(axes)):
         axes[j].axis('off')  # Turn off unused subplots
