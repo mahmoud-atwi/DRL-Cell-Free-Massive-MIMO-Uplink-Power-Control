@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="delete">
+    <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MobilityCFmMIMOEnv.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/MobilityCFmMIMOEnv.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hyperparameters/SAC_SGD.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/hyperparameters/SAC_SGD.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/multi_model_generate_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/multi_model_generate_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/benchmarking.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,46 +35,46 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python._options.executor": "Run",
-    "Python.benchmark.executor": "Run",
-    "Python.computational_complexity.executor": "Run",
-    "Python.hparam_opt (1).executor": "Run",
-    "Python.hparam_opt.executor": "Run",
-    "Python.hparam_opt_copy.executor": "Debug",
-    "Python.hyperparams.executor": "Debug",
-    "Python.mobility_env.executor": "Run",
-    "Python.mobility_training (1).executor": "Run",
-    "Python.mobility_training.executor": "Run",
-    "Python.multi_model_generate_data.executor": "Run",
-    "Python.random_waypoint.executor": "Debug",
-    "Python.simu_test.executor": "Run",
-    "Python.simulation_para.executor": "Debug",
-    "Python.single_model_generate_data.executor": "Run",
-    "Python.test (1).executor": "Run",
-    "Python.test.executor": "Run",
-    "Python.test1.executor": "Run",
-    "Python.testing (1).executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.training (1).executor": "Run",
-    "Python.training (2).executor": "Run",
-    "Python.training.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/mahmoud/PycharmProjects/DRL Cell-Free Massive MIMO Uplink Power Control",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python._options.executor&quot;: &quot;Run&quot;,
+    &quot;Python.benchmark.executor&quot;: &quot;Run&quot;,
+    &quot;Python.computational_complexity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hparam_opt (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.hparam_opt.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hparam_opt_copy.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.hyperparams.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.mobility_env.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mobility_training (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.mobility_training.executor&quot;: &quot;Run&quot;,
+    &quot;Python.multi_model_generate_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.random_waypoint.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.simu_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.simulation_para.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.single_model_generate_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.training (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.training (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.training.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/mahmoud/PycharmProjects/DRL Cell-Free Massive MIMO Uplink Power Control&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -84,11 +84,11 @@
       <recent name="$PROJECT_DIR$/test" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/optuna_dbs/SGD" />
       <recent name="$PROJECT_DIR$/models/MODEL_SAC_SGD_10K" />
       <recent name="$PROJECT_DIR$/models/MODEL_SAC_SGD_2K" />
       <recent name="$PROJECT_DIR$/models" />
       <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/hyperparameters" />
     </key>
   </component>
   <component name="RunManager" selected="Python.computational_complexity">
@@ -296,47 +296,8 @@
       <workItem from="1704604773938" duration="19958000" />
       <workItem from="1704918805575" duration="5379000" />
       <workItem from="1704985558943" duration="20826000" />
-      <workItem from="1705053775947" duration="3884000" />
-    </task>
-    <task id="LOCAL-00105" summary="update">
-      <option name="closed" value="true" />
-      <created>1704253400878</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1704253400878</updated>
-    </task>
-    <task id="LOCAL-00106" summary="add CF SE based rewards">
-      <option name="closed" value="true" />
-      <created>1704253425166</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1704253425166</updated>
-    </task>
-    <task id="LOCAL-00107" summary="update">
-      <option name="closed" value="true" />
-      <created>1704253446914</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1704253446914</updated>
-    </task>
-    <task id="LOCAL-00108" summary="add new net_arch types">
-      <option name="closed" value="true" />
-      <created>1704253474573</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1704253474573</updated>
-    </task>
-    <task id="LOCAL-00109" summary="update">
-      <option name="closed" value="true" />
-      <created>1704253492321</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
-      <option name="project" value="LOCAL" />
-      <updated>1704253492321</updated>
+      <workItem from="1705053775947" duration="5889000" />
+      <workItem from="1705083278358" duration="6107000" />
     </task>
     <task id="LOCAL-00110" summary="add h-param for CF SE">
       <option name="closed" value="true" />
@@ -690,14 +651,53 @@
       <option name="project" value="LOCAL" />
       <updated>1705069742157</updated>
     </task>
-    <option name="localTasksCounter" value="154" />
+    <task id="LOCAL-00154" summary="delete">
+      <option name="closed" value="true" />
+      <created>1705069996947</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1705069996947</updated>
+    </task>
+    <task id="LOCAL-00155" summary="add">
+      <option name="closed" value="true" />
+      <created>1705070005900</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1705070005900</updated>
+    </task>
+    <task id="LOCAL-00156" summary="update log delta models">
+      <option name="closed" value="true" />
+      <created>1705070030794</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1705070030794</updated>
+    </task>
+    <task id="LOCAL-00157" summary="update with new trained models">
+      <option name="closed" value="true" />
+      <created>1705070052013</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1705070052013</updated>
+    </task>
+    <task id="LOCAL-00158" summary="update">
+      <option name="closed" value="true" />
+      <created>1705070065413</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1705070065413</updated>
+    </task>
+    <option name="localTasksCounter" value="159" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add h-param for CF SE" />
     <MESSAGE value="Add new reward methods" />
     <MESSAGE value="Add additional models" />
     <MESSAGE value="Fix UE position propagation across models envs &amp; reformatting" />
@@ -713,16 +713,17 @@
     <MESSAGE value="deleted" />
     <MESSAGE value="remove unused model" />
     <MESSAGE value="update func doc" />
-    <MESSAGE value="add" />
     <MESSAGE value="update &quot;log_delta&quot; reward" />
     <MESSAGE value="remove comment" />
     <MESSAGE value="update doc" />
     <MESSAGE value="add several functions for heatmap drawing" />
-    <MESSAGE value="update with new trained models" />
     <MESSAGE value="remove comments" />
-    <MESSAGE value="update" />
     <MESSAGE value="delete" />
-    <option name="LAST_COMMIT_MESSAGE" value="delete" />
+    <MESSAGE value="add" />
+    <MESSAGE value="update log delta models" />
+    <MESSAGE value="update with new trained models" />
+    <MESSAGE value="update" />
+    <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
