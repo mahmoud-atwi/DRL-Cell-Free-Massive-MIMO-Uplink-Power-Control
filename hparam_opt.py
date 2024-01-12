@@ -367,8 +367,3 @@ if __name__ == "__main__":
                                   open_dashboard=True, dashboard_port=8080, verbose=0)
     opt.register_env()
     opt.run()
-
-# gmean with:
-#   - relative
-#   - exp_delta_clip
-#   - exp_relative_clip
