@@ -13,12 +13,13 @@ import optuna
 import pandas as pd
 import seaborn as sns
 import torch
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.linalg import sqrtm
 from scipy.stats import stats
+from sklearn.metrics import auc
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.vec_env import VecEnv
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 warnings.simplefilter('error', RuntimeWarning)
 
@@ -438,10 +439,75 @@ def generate_ue_locations(num_ues: int, area_bounds: Tuple[float, float, float, 
     return ue_locations
 
 
+# def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
+#                  title: str, xlabel: Optional[str], operation: Optional[str], cumulative: bool) -> None:
+#     """
+#     Plot CDF or PDF for multiple models using matplotlib, with an optional operation applied across iterations.
+#     """
+#     operations = {
+#         'min': np.min,
+#         'max': np.max,
+#         'mean': np.mean,
+#         'sum': np.sum,
+#     }
+#
+#     if operation is not None and operation not in operations:
+#         raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
+#
+#     plt.figure(figsize=(12, 6))
+#
+#     for key, info in data.items():
+#         value = info['data']
+#
+#         if isinstance(value, (pd.DataFrame, pd.Series)):
+#             value = value.to_numpy()
+#
+#         if operation is not None:
+#             value = operations[operation](value, axis=0)  # Apply operation across iterations
+#
+#         value = value.flatten()
+#
+#         if cumulative:
+#             sorted_data = np.sort(value)
+#             yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
+#             auc_value = auc(sorted_data, yvals)
+#             print(f"AUC for {info['label']}: {auc_value:.2f}")
+#             plt.plot(sorted_data, yvals,
+#                      label=info['label'],
+#                      color=info.get('color'),
+#                      linestyle=info.get('linestyle'),
+#                      marker=info.get('marker', None),
+#                      linewidth=info.get('linewidth'))
+#         else:
+#             if len(np.unique(value)) > 1:
+#                 bins = np.linspace(np.min(value), np.max(value), 30)
+#                 counts, bin_edges = np.histogram(value, bins=bins, density=True)
+#                 bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+#                 plt.plot(bin_centers, counts,
+#                          label=info['label'],
+#                          color=info.get('color'),
+#                          linestyle=info.get('linestyle'),
+#                          marker=info.get('marker', None),
+#                          linewidth=info.get('linewidth'))
+#             else:
+#                 print(f"Data for {key} lacks variability, skipping PDF plot.")
+#
+#     plt.xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
+#     plt.ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
+#     plt.title(title)
+#     plt.legend(bbox_to_anchor=(1.3, 0.5), loc='center right')
+#     plt.grid(True)
+#     plt.tight_layout()
+#     plt.show()
+
+
 def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
-                 title: str, xlabel: Optional[str], operation: Optional[str], cumulative: bool) -> None:
+                 title: str, xlabel: Optional[str], operation: Optional[str],
+                 cumulative: bool, save_plt: bool = False, save_path: str = '',
+                 convert_to_db: bool = False, xmin: Optional[float] = None) -> None:
     """
     Plot CDF or PDF for multiple models using matplotlib, with an optional operation applied across iterations.
+    If save_plt is True, save the plot to the given save_path with the appropriate title.
     """
     operations = {
         'min': np.min,
@@ -453,47 +519,67 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
     if operation is not None and operation not in operations:
         raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
 
-    plt.figure(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(12, 6))
+    lines = []
 
     for key, info in data.items():
         value = info['data']
+
+        if convert_to_db:
+            value[value <= 0] = np.nan
+            value = 10 * np.log10(value)
 
         if isinstance(value, (pd.DataFrame, pd.Series)):
             value = value.to_numpy()
 
         if operation is not None:
-            value = operations[operation](value, axis=0)  # Apply operation across iterations
+            value = operations[operation](value, axis=0)
 
         value = value.flatten()
 
         if cumulative:
+            value = value[~np.isnan(value)]
             sorted_data = np.sort(value)
             yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-            plt.plot(sorted_data, yvals,
-                     label=info['label'],
-                     color=info.get('color'),
-                     linestyle=info.get('linestyle'),
-                     marker=info.get('marker', None),
-                     linewidth=info.get('linewidth'))
+            auc_value = auc(sorted_data, yvals)
+            print(f"AUC for {info['label']}: {auc_value:.2f}")
+            line, = ax.plot(sorted_data, yvals,
+                            label=info['label'],
+                            color=info.get('color'),
+                            linestyle=info.get('linestyle'),
+                            marker=info.get('marker', None),
+                            linewidth=info.get('linewidth'))
+            lines.append(line)
         else:
+            value = value[~np.isnan(value)]
             if len(np.unique(value)) > 1:
-                bins = np.linspace(np.min(value), np.max(value), 30)
-                counts, bin_edges = np.histogram(value, bins=bins, density=True)
-                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-                plt.plot(bin_centers, counts,
-                         label=info['label'],
-                         color=info.get('color'),
-                         linestyle=info.get('linestyle'),
-                         marker=info.get('marker', None),
-                         linewidth=info.get('linewidth'))
+                line = sns.kdeplot(value, ax=ax,
+                                   label=info['label'],
+                                   color=info.get('color'),
+                                   linestyle=info.get('linestyle'),
+                                   linewidth=info.get('linewidth'))
+                lines.append(line.lines[-1])
             else:
                 print(f"Data for {key} lacks variability, skipping PDF plot.")
 
-    plt.xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
-    plt.ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
-    plt.title(title)
-    plt.legend(bbox_to_anchor=(1.3, 0.5), loc='center right')
-    plt.grid(True)
+    ax.set_xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
+    ax.set_ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
+    ax.set_title(title)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.grid(True)
+
+    if xmin is not None:
+        ax.set_xlim(xmin=xmin)
+
+    plt.tight_layout()
+
+    if save_plt:
+        # Create the save path if it doesn't exist
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        plt_type = 'CDF' if cumulative else 'PDF'
+        plt.savefig(f'{save_path}/{plt_type}_{title.replace(" ", "_")}.png')
+
     plt.show()
 
 
@@ -1168,3 +1254,47 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
 
     plt.tight_layout()
     plt.show()
+
+
+def compare_with_baseline(data_dict, operation, baseline_key):
+    if baseline_key not in data_dict:
+        raise ValueError("Baseline key not found in the dictionary.")
+
+    baseline_data = data_dict[baseline_key]['data']
+
+    # Define the operation function
+    operations = {
+        'min': np.min,
+        'max': np.max,
+        'mean': np.mean,
+        'sum': np.sum,
+    }
+
+    if operation is not None and operation not in operations:
+        raise ValueError(f"Invalid operation. Choose from {list(operations.keys())} or None.")
+
+    if operation is not None:
+        # Ensure the result is a DataFrame
+        baseline_result = pd.DataFrame(operations[operation](baseline_data, axis=0))
+    else:
+        baseline_result = baseline_data
+
+    # Prepare the result DataFrame
+    result_df = pd.DataFrame()
+
+    # Compare each data frame with the baseline and get the highest percentile
+    for key, item in data_dict.items():
+        if key == baseline_key:
+            continue
+
+        if operation is not None:
+            # Ensure the result is a DataFrame
+            data_result = pd.DataFrame(operations[operation](item['data'], axis=0))
+        else:
+            data_result = item['data']
+
+        comparison = data_result <= baseline_result
+        highest_percentile = comparison.mean(axis=0).max() * 100
+        result_df[key] = [highest_percentile]
+
+    return result_df

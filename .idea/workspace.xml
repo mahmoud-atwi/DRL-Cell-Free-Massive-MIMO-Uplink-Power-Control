@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="165e63bc-913c-4ef2-a12c-01cd6c7cd342" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/benchmarking.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +25,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -91,7 +94,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.computational_complexity">
+  <component name="RunManager" selected="Python.test">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
       <option name="ENV_FILES" value="" />
@@ -188,7 +191,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="single_model_generate_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="DRL Cell-Free Massive MIMO Uplink Power Control" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -203,7 +206,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/single_model_generate_data.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="true" />
@@ -237,19 +240,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.test" />
       <item itemvalue="Python.computational_complexity" />
-      <item itemvalue="Python.single_model_generate_data" />
       <item itemvalue="Python.hparam_opt" />
       <item itemvalue="Python.multi_model_generate_data" />
       <item itemvalue="Python.training" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.computational_complexity" />
         <item itemvalue="Python.multi_model_generate_data" />
         <item itemvalue="Python.training" />
         <item itemvalue="Python.hparam_opt" />
-        <item itemvalue="Python.single_model_generate_data" />
       </list>
     </recent_temporary>
   </component>
@@ -298,6 +301,10 @@
       <workItem from="1704985558943" duration="20826000" />
       <workItem from="1705053775947" duration="5889000" />
       <workItem from="1705083278358" duration="6107000" />
+      <workItem from="1705094551522" duration="3684000" />
+      <workItem from="1705133575752" duration="3766000" />
+      <workItem from="1705160239483" duration="18136000" />
+      <workItem from="1705181423080" duration="2929000" />
     </task>
     <task id="LOCAL-00110" summary="add h-param for CF SE">
       <option name="closed" value="true" />
@@ -745,7 +752,7 @@
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$computational_complexity.coverage" NAME="computational_complexity Coverage Results" MODIFIED="1705068329351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$training.coverage" NAME="training Coverage Results" MODIFIED="1705052443538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$testing__1_.coverage" NAME="testing (1) Coverage Results" MODIFIED="1702819081577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
-    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$test.coverage" NAME="test Coverage Results" MODIFIED="1704986370707" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$test.coverage" NAME="test Coverage Results" MODIFIED="1705135971196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hparam_opt_copy.coverage" NAME="hparam_opt_copy Coverage Results" MODIFIED="1703797513769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$hyperparams.coverage" NAME="hyperparams Coverage Results" MODIFIED="1703799887656" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DRL_Cell_Free_Massive_MIMO_Uplink_Power_Control$mobility_env.coverage" NAME="mobility_env Coverage Results" MODIFIED="1703361841822" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/single_input_env" />
