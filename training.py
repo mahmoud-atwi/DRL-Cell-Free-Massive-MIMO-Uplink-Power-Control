@@ -76,6 +76,7 @@ class RLModelTrainer:
             reward_method=self.reward_method,
             temporal_reward_method=self.temporal_reward_method,
             temporal_data=self.temporal_data,
+            temporal_window_size=self.hyperparams["q_window"],
         )
         check_env(self.env, warn=True)
 
