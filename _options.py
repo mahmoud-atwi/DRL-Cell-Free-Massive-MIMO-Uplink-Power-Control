@@ -94,7 +94,9 @@ def get_config():
 
     # Get user input for algorithm
     config["algo"] = input("Enter the algorithm [currently only SAC and DDPG are supported](e.g., 'SAC'): ")
-    config["algo"] = 'SAC'
+    # config["algo"] = 'SAC'
+    if config["algo"] not in ['SAC', 'DDPG']:
+        raise ValueError("Invalid algorithm. Currently only SAC and DDPG are supported.")
     # Get user input for optimizer class
     optimizer_input = input("Enter the optimizer class ('Adam' or 'SGD'): ")
     if optimizer_input.lower() == 'adam':
