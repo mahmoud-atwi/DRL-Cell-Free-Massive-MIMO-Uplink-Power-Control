@@ -94,13 +94,16 @@ class HyperparameterOptimizer:
         self.n_evaluations: int = kwargs.get('n_evaluations', self.n_timesteps // 100)
         self.n_eval_episodes: int = kwargs.get('n_eval_episodes', 5)
         self.algo: str = kwargs.get('algo', 'SAC')
+        print(self.algo)
         self.policy_type: str = 'MlpPolicy'  # currently only MlpPolicy is supported
-        self.reward_method: Optional = kwargs.get('reward_method', None)
-        self.temporal_reward_method: Optional = kwargs.get('temporal_reward_method', 'exp_relative_clip')
-        self.temporal_reward_operation: str = kwargs.get('temporal_reward_operation', 'mean')
-        self.temporal_reward_max: float = kwargs.get('temporal_reward_max', 1.0)
-        self.temporal_data: str = kwargs.get('temporal_data', 'cf_se')
-        self.temporal_window_size: int = kwargs.get('temporal_window_size', 10)
+        # self.reward_method: Optional = kwargs.get('reward_method', None)
+        # self.temporal_reward_method: Optional = kwargs.get('temporal_reward_method', 'exp_relative_clip')
+        # print(self.temporal_reward_method)
+        # self.temporal_reward_operation: str = kwargs.get('temporal_reward_operation', 'mean')
+        # self.temporal_reward_max: float = kwargs.get('temporal_reward_max', 1.0)
+        # self.temporal_data: str = kwargs.get('temporal_data', 'cf_se')
+        # print(self.temporal_data)
+        # self.temporal_window_size: int = kwargs.get('temporal_window_size', 10)
         self.seed: int = kwargs.get('seed', 0)
 
         self.study_name: str = kwargs.get('study_name')
@@ -177,13 +180,15 @@ class HyperparameterOptimizer:
             raise ValueError(f"Unknown pruner: {self.pruner_method}")
         return pruner
 
-    def create_envs(self, vec_env_class: Optional[Type[Union[DummyVecEnv, SubprocVecEnv]]], eval_env: bool = False,
+    def create_envs(self, vec_env_class: Optional[Type[Union[DummyVecEnv, SubprocVecEnv]]], extra_hyperparams,
+                    eval_env: bool = False,
                     no_log: bool = True) -> make_vec_env:
         """
         Create environments for training or evaluation.
 
         Args:
             vec_env_class (type): The class of vectorized environment to be used.
+            extra_hyperparams (dict): Extra hyperparameters for the environment.
             eval_env (bool): Whether the environment is for evaluation.
             no_log (bool): Whether to disable logging.
 
@@ -197,8 +202,8 @@ class HyperparameterOptimizer:
             return spec.make(**kwargs)
 
         actual_env_kwargs = self.eval_env_kwargs if eval_env else self.env_kwargs
-
-        env = make_vec_env(make_env, n_envs=self.n_envs, seed=self.seed, env_kwargs=actual_env_kwargs,
+        updated_env_kwargs = {**actual_env_kwargs, **extra_hyperparams}
+        env = make_vec_env(make_env, n_envs=self.n_envs, seed=self.seed, env_kwargs=updated_env_kwargs,
                            monitor_dir=log_dir, vec_env_cls=vec_env_class, )
         return env
 
@@ -214,8 +219,11 @@ class HyperparameterOptimizer:
         """
         kwargs = dict()
         sampled_hyperparams = HYPERPARAMS_SAMPLER[self.algo](trial)
-        kwargs.update(sampled_hyperparams)
-        env = self.create_envs(vec_env_class=DummyVecEnv, eval_env=False, no_log=self.no_log)
+        print(sampled_hyperparams)
+        kwargs.update(sampled_hyperparams[0])
+        extra_hyperparams = sampled_hyperparams[1]
+        env = self.create_envs(vec_env_class=DummyVecEnv, extra_hyperparams=extra_hyperparams, eval_env=False,
+                               no_log=self.no_log)
         trial_verbosity = 0
         if self.verbose >= 2:
             trial_verbosity = self.verbose
@@ -223,15 +231,16 @@ class HyperparameterOptimizer:
         model = ALGOS[self.algo](policy=self.policy_type, env=env, seed=None,  # Not seeding the trial
                                  verbose=trial_verbosity, device=self.device, **kwargs, )
 
-        eval_env = self.create_envs(vec_env_class=DummyVecEnv, eval_env=True, no_log=self.no_log)
+        eval_env = self.create_envs(vec_env_class=DummyVecEnv, extra_hyperparams=extra_hyperparams, eval_env=True,
+                                    no_log=self.no_log)
 
         optuna_eval_freq = max(int(self.n_timesteps / self.n_evaluations) // self.n_envs, 1)
 
         path = os.path.join(self.optimization_log_path, f"trial_{trial.number}") if self.optimization_log_path else None
         callbacks = [
             TrialEvalCallback(eval_env, trial, best_model_save_path=path, log_path=path,
-                              n_eval_episodes=self.n_eval_episodes,
-                              eval_freq=optuna_eval_freq, deterministic=self.deterministic_eval)]
+                              n_eval_episodes=self.n_eval_episodes, eval_freq=optuna_eval_freq,
+                              deterministic=self.deterministic_eval)]
 
         try:
             model.learn(self.n_timesteps, callback=callbacks)
@@ -336,7 +345,7 @@ if __name__ == "__main__":
     # 6) cf_min_se
     # 7) cf_mean_se
     # 8) cf_sum_se
-    #
+
     # temporal_reward_method
     # options:
     # 1) delta
@@ -345,15 +354,16 @@ if __name__ == "__main__":
     # 4) exp_relative_clip
     # 5) log_delta
     # 6) log_relative
+
     area_bounds = (0, square_length, 0, square_length)
     AP_locations = generate_ap_locations(L, 100, area_bounds)
     UE_initial_locations = generate_ue_locations(K, area_bounds)
 
     env_id = "env/MobilityCFmMIMOEnv-v0"
     env_name = "MobilityCFmMIMOEnv"
-
-    temporal_reward_method = "exp_delta_clip"
-    temporal_data = "cf_se"  # cf_se | sinr
+    algo = "DDPG"
+    temporal_reward_method = "log_delta"
+    temporal_data = "sinr"  # cf_se | sinr
     temporal_reward_operation = "mean"
 
     environment_kwargs = {"APs_positions": AP_locations, "UEs_positions": UE_initial_locations, "UEs_mobility": True,
@@ -361,9 +371,9 @@ if __name__ == "__main__":
                           "temporal_reward_operation": temporal_reward_operation,
                           "temporal_data": temporal_data}
 
-    study_name = f"{env_name}-SAC-{temporal_reward_method}-{temporal_data}-{temporal_reward_operation}"
+    study_name = f"{env_name}-{algo}-{temporal_reward_method}-{temporal_data}-{temporal_reward_operation}"
     opt = HyperparameterOptimizer(env_id=env_id, env_name=env_name, entry_point="env:MobilityCFmMIMOEnv",
-                                  env_kwargs=environment_kwargs, study_name=study_name, n_timesteps=2000, n_trials=200,
-                                  open_dashboard=True, dashboard_port=8080, verbose=0)
+                                  env_kwargs=environment_kwargs, algo=algo, study_name=study_name, n_timesteps=2000,
+                                  n_trials=200, open_dashboard=True, dashboard_port=8080, verbose=0)
     opt.register_env()
     opt.run()
