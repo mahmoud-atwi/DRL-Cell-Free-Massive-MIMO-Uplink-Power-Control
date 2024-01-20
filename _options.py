@@ -15,6 +15,7 @@ from torch.optim import SGD
 # MobilityCFmMIMOEnv-delta_sinr-v0
 # MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0
 # MobilityCFmMIMOEnv-log_delta_sinr-v0
+# MobilityCFmMIMOEnv-log_delta_sinr-v1
 # MobilityCFmMIMOEnv-relative_sinr-v0
 # MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0
 # MobilityCFmMIMOEnv-log_relative_sinr-v0
@@ -37,9 +38,10 @@ def select_reward_option():
         "12": "Delta SINR",
         "13": "Exp Delta SINR Clip",
         "14": "Log Delta SINR",
-        "15": "Relative SINR",
-        "16": "Exp Relative SINR Clip",
-        "17": "Log Relative SINR",
+        "15": "Log Delta SINR (q_n=1)",
+        "16": "Relative SINR",
+        "17": "Exp Relative SINR Clip",
+        "18": "Log Relative SINR",
     }
 
     # Map of user selection to environment name
@@ -58,9 +60,10 @@ def select_reward_option():
         "12": ("MobilityCFmMIMOEnv-delta_sinr-v0", None, "delta", "sinr"),
         "13": ("MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0", None, "exp_delta_clip", "sinr"),
         "14": ("MobilityCFmMIMOEnv-log_delta_sinr-v0", None, "log_delta", "sinr"),
-        "15": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
-        "16": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
-        "17": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
+        "15": ("MobilityCFmMIMOEnv-log_delta_sinr-v1", None, "log_delta", "sinr"),
+        "16": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
+        "17": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
+        "18": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
     }
 
     while True:
@@ -90,7 +93,7 @@ def get_config():
     config = dict()
 
     # Get user input for algorithm
-    config["algo"] = input("Enter the algorithm [currently only SAC is supported](e.g., 'SAC'): ")
+    config["algo"] = input("Enter the algorithm [currently only SAC and DDPG are supported](e.g., 'SAC'): ")
     config["algo"] = 'SAC'
     # Get user input for optimizer class
     optimizer_input = input("Enter the optimizer class ('Adam' or 'SGD'): ")
@@ -110,10 +113,14 @@ def get_config():
 
 
 def get_hyperparameters(config):
-    if config["optimizer_class"] is Adam:
+    if config["optimizer_class"] is Adam and config["algo"] == 'SAC':
         yaml_file = os.path.join('hyperparameters', 'SAC_Adam.yaml')
-    elif config["optimizer_class"] is SGD:
+    elif config["optimizer_class"] is SGD and config["algo"] == 'SAC':
         yaml_file = os.path.join('hyperparameters', 'SAC_SGD.yaml')
+    elif config["optimizer_class"] is Adam and config["algo"] == 'DDPG':
+        yaml_file = os.path.join('hyperparameters', 'DDPG_Adam.yaml')
+    elif config["optimizer_class"] is SGD and config["algo"] == 'DDPG':
+        yaml_file = os.path.join('hyperparameters', 'DDPG_SGD.yaml')
     else:
         warnings.warn("Pre-tuned hyperparameters doesn't for the selected optimizer. Model will use SGD optimizer.")
         config["optimizer_class"] = SGD
