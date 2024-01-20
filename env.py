@@ -149,6 +149,9 @@ class MobilityCFmMIMOEnv(gym.Env):
         self.temporal_window_size = kwargs.get('temporal_window_size', 10)
         self.temporal_history = deque(maxlen=self.temporal_window_size)
 
+        self.r_alpha = kwargs.get('r_alpha', 1)
+        self.r_beta = kwargs.get('r_beta', 1)
+
         # Define action space (continuous UL power levels for each UE)
         self.action_space = spaces.Box(low=-1, high=1, shape=(self.K,), dtype=np.float32)
 
@@ -390,7 +393,7 @@ class MobilityCFmMIMOEnv(gym.Env):
                 delta < 0) > 0 else 0
 
             # Final temporal reward
-            temporal_reward = r_plus - r_minus
+            temporal_reward = (self.r_alpha * r_plus) - (self.r_beta * r_minus)
             return temporal_reward.astype(np.float32)
 
         elif _method == "log_relative":
