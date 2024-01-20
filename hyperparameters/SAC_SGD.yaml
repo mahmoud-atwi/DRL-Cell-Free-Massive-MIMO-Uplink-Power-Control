@@ -16,7 +16,7 @@ MobilityCFmMIMOEnv-ch_capacity-v0:
     optimizer_class: 'SGD'
     log_std_init: 0.448800043823388
     net_arch: [64, 64]
-
+  q_window: 10
 
 # Reward: geo mean SE
 MobilityCFmMIMOEnv-geo_mean_se-v0:
@@ -34,7 +34,7 @@ MobilityCFmMIMOEnv-geo_mean_se-v0:
     optimizer_class: 'SGD'
     log_std_init: -3.116854385927162
     net_arch: [400, 300]
-
+  q_window: 10
 
 # Reward: mean SE
 MobilityCFmMIMOEnv-mean_se-v0:
@@ -52,7 +52,7 @@ MobilityCFmMIMOEnv-mean_se-v0:
     optimizer_class: 'SGD'
     log_std_init: 0.601246704124134
     net_arch: [64, 64]
-
+  q_window: 10
 
 # Reward: min SE
 MobilityCFmMIMOEnv-min_se-v0:
@@ -70,7 +70,7 @@ MobilityCFmMIMOEnv-min_se-v0:
     optimizer_class: 'SGD'
     log_std_init: -3.7086057987131578
     net_arch: [400, 300]
-
+  q_window: 10
 
 # Reward: sum SE
 MobilityCFmMIMOEnv-sum_se-v0:
@@ -88,6 +88,7 @@ MobilityCFmMIMOEnv-sum_se-v0:
     optimizer_class: 'SGD'
     log_std_init: -2.8033597511607065
     net_arch: [256, 256]
+  q_window: 10
 
 # Reward: CF MIN SE
 MobilityCFmMIMOEnv-cf_min_se-v0:
@@ -105,7 +106,7 @@ MobilityCFmMIMOEnv-cf_min_se-v0:
     optimizer_class: 'SGD'
     log_std_init: 0.6318348523226943
     net_arch: [64, 64]
-
+  q_window: 10
 
 # Reward: CF MIN SE
 MobilityCFmMIMOEnv-cf_mean_se-v0:
@@ -123,7 +124,7 @@ MobilityCFmMIMOEnv-cf_mean_se-v0:
     optimizer_class: 'SGD'
     log_std_init: -3.6204042005595283
     net_arch: [256, 256]
-
+  q_window: 10
 
 # Reward: CF SUM SE
 MobilityCFmMIMOEnv-cf_sum_se-v0:
@@ -141,6 +142,7 @@ MobilityCFmMIMOEnv-cf_sum_se-v0:
     optimizer_class: 'SGD'
     log_std_init: -0.5300596284029943
     net_arch: [256, 256]
+  q_window: 10
 
 ############################################################################################################
 # Temporal Reward: Mean Delta CF SE
@@ -158,6 +160,7 @@ MobilityCFmMIMOEnv-delta_cf_se-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [128, 256, 128]
+  q_window: 10
 
 # Temporal Reward: Mean Exponential Delta CF SE (Clipped)
 MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0:
@@ -174,6 +177,7 @@ MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [128, 256, 128]
+  q_window: 10
 
 # Temporal Reward: Mean Exponential Delta CF SE (Clipped) [Note: this is the same as exp_delta_clip-v0 but reward achieved is higher]
 MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v1:
@@ -190,6 +194,7 @@ MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v1:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256, 256]
+  q_window: 10
 
 # Temporal Reward: Mean Logarithmic Delta CF SE
 MobilityCFmMIMOEnv-log_delta_cf_se-v0:
@@ -206,6 +211,7 @@ MobilityCFmMIMOEnv-log_delta_cf_se-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256, 256]
+  q_window: 10
 
 # Temporal Reward: Mean Relative CF SE
 MobilityCFmMIMOEnv-relative_cf_se-v0:
@@ -222,6 +228,7 @@ MobilityCFmMIMOEnv-relative_cf_se-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [400, 300]
+  q_window: 10
 
 # Temporal Reward: Mean Exponential Relative CF SE (Clipped)
 MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0:
@@ -238,6 +245,7 @@ MobilityCFmMIMOEnv-exp_relative_cf_se_clip-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [64, 64]
+  q_window: 10
 
 # Temporal Reward: Mean Logarithmic Relative CF SE
 MobilityCFmMIMOEnv-log_relative_cf_se-v0:
@@ -254,6 +262,7 @@ MobilityCFmMIMOEnv-log_relative_cf_se-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256, 256]
+  q_window: 10
 
 ############################################################################################################
 # Temporal Reward: Mean Delta SINR
@@ -271,6 +280,7 @@ MobilityCFmMIMOEnv-delta_sinr-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [128, 256, 128]
+  q_window: 10
 
 # Temporal Reward: Mean Exponential Delta SINR (Clipped)
 MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0:
@@ -287,6 +297,7 @@ MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256]
+  q_window: 10
 
 # Temporal Reward: Mean Logarithmic Delta SINR
 MobilityCFmMIMOEnv-log_delta_sinr-v0:
@@ -303,6 +314,23 @@ MobilityCFmMIMOEnv-log_delta_sinr-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256]
+  q_window: 10
+
+MobilityCFmMIMOEnv-log_delta_sinr-v1:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00016754428694648471
+  buffer_size: 10000
+  batch_size: 256
+  ent_coef: 'auto'
+  gamma: 0.9
+  tau: 0.05
+  train_freq: 8
+  gradient_steps: 8
+  learning_starts: 0
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
+  q_window: 1
 
 # Temporal Reward: Mean Relative SINR
 MobilityCFmMIMOEnv-relative_sinr-v0:
@@ -319,6 +347,7 @@ MobilityCFmMIMOEnv-relative_sinr-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256]
+  q_window: 10
 
 # Temporal Reward: Mean Exponential Relative SINR (Clipped)
 MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0:
@@ -335,6 +364,7 @@ MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256]
+  q_window: 10
 
 # Temporal Reward: Mean Logarithmic Relative SINR
 MobilityCFmMIMOEnv-log_relative_sinr-v0:
@@ -351,3 +381,4 @@ MobilityCFmMIMOEnv-log_relative_sinr-v0:
   policy_kwargs:
     optimizer_class: 'SGD'
     net_arch: [256, 256, 256]
+  q_window: 10
