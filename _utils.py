@@ -5,6 +5,7 @@ import subprocess
 import time
 import warnings
 from typing import Any, Dict, List, Type, Optional, Union, Tuple
+from matplotlib.lines import Line2D
 
 import cvxpy as cp
 import matplotlib.pyplot as plt
@@ -541,8 +542,6 @@ def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, 
             value = value[~np.isnan(value)]
             sorted_data = np.sort(value)
             yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-            auc_value = auc(sorted_data, yvals)
-            print(f"AUC for {info['label']}: {auc_value:.2f}")
             line, = ax.plot(sorted_data, yvals,
                             label=info['label'],
                             color=info.get('color'),
@@ -915,7 +914,7 @@ def rank_models_moments(moments_df: pd.DataFrame, criteria: str = 'mean') -> pd.
 
 
 def calculate_and_rank_percentiles(data_dict: Dict[str, Dict[str, np.ndarray]],
-                                   percentile_ranks: List[int] = None) -> pd.DataFrame:
+                                   percentile_ranks: List[int] = None, operation: Optional[str] = None) -> pd.DataFrame:
     """
     Calculate specified percentiles for multiple datasets and rank them based on the highest values.
 
@@ -924,6 +923,7 @@ def calculate_and_rank_percentiles(data_dict: Dict[str, Dict[str, np.ndarray]],
                      - 'label': Label or name of the dataset.
     :param percentile_ranks: A list of integers specifying the percentiles to calculate (e.g., [50, 90]).
                              Defaults to [50, 90] if None is provided.
+    :param operation: The operation to apply to the data before calculating percentiles ('min', 'max', 'mean', 'sum').
     :return: A DataFrame with percentile values for each dataset and a rank based on the last percentile value.
              Datasets are ranked from best (highest percentile value) to worst.
 
@@ -933,11 +933,23 @@ def calculate_and_rank_percentiles(data_dict: Dict[str, Dict[str, np.ndarray]],
     if percentile_ranks is None:
         percentile_ranks = [50, 90]
 
+    operations = {
+        'min': np.min,
+        'max': np.max,
+        'mean': np.mean,
+        'sum': np.sum,
+    }
+
+    if operation is not None and operation not in operations:
+        raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
+
     # Prepare data for DataFrame
     percentile_data = []
 
     for name, data_info in data_dict.items():
         data = data_info['data']
+        if operation is not None:
+            data = operations[operation](data, axis=0)
         percentiles = {f'{p}th Percentile': np.percentile(data, p) for p in percentile_ranks}
         percentiles['Model'] = data_info['label']
         percentile_data.append(percentiles)
@@ -1248,6 +1260,13 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
         ax = axes[i]
         _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin, vmax, grid_size, rounding_precision,
                            colorbar_ticks, filter_min, filter_max)
+
+    # Create custom legend handles
+    ap_legend_handle = Line2D([0], [0], marker='2', color='black', label='Access Point',
+                              markerfacecolor='black', markersize=10, linestyle='None')
+
+    # Add the legend to the figure
+    fig.legend(handles=[ap_legend_handle], loc='lower left', bbox_to_anchor=(0.0, -0.05))
 
     for j in range(i + 1, len(axes)):
         axes[j].axis('off')  # Turn off unused subplots
