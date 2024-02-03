@@ -1,12 +1,31 @@
-import numpy as np
+from typing import Optional, Tuple, Union
 
+import numpy as np
 from scipy.optimize import minimize
 
 from _utils import feasibility_problem_cvx, compute_prod_sinr
 from compute_spectral_efficiency import compute_se
 
 
-def power_opt_maxmin(signal, interference, max_power, prelog_factor, return_spectral_efficiency=False):
+def power_opt_maxmin(signal: np.ndarray,
+                     interference: np.ndarray,
+                     max_power: float,
+                     prelog_factor: float,
+                     return_spectral_efficiency: bool = False) \
+        -> Union[Tuple[Optional[float], np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    """
+    Optimizes power allocation to maximize the minimum rate among users under a max power constraint.
+
+    :param signal: An array containing the signal levels for each user.
+    :param interference: An array containing the interference levels for each user.
+    :param max_power: The maximum power that can be allocated to a user.
+    :param prelog_factor: The prelog factor used in the spectral efficiency computation.
+    :param return_spectral_efficiency: A flag to indicate whether to return the spectral efficiency along
+                                       with the optimal power allocation. Defaults to False.
+    :return: If return_spectral_efficiency is True, returns a tuple containing the spectral efficiency and the optimal
+             power allocation for each user. Otherwise, returns None for spectral efficiency and the optimal power
+             allocation.
+    """
 
     K = signal.shape[0]
 
@@ -36,16 +55,35 @@ def power_opt_maxmin(signal, interference, max_power, prelog_factor, return_spec
         return None, p_best
 
 
-def power_opt_prod_sinr(signal, interference, max_power, prelog_factor, return_spectral_efficiency=False):
+def power_opt_prod_sinr(signal: np.ndarray,
+                        interference: np.ndarray,
+                        max_power: float,
+                        prelog_factor: float,
+                        return_spectral_efficiency: bool = False
+                        ) -> Tuple[Union[np.ndarray, None], np.ndarray]:
+    """
+    Optimizes power allocation to maximize the product of SINR among users under a maximum power constraint.
 
-    if not isinstance(signal, np.ndarray):
-        signal = signal.cpu().numpy()
-    if not isinstance(interference, np.ndarray):
-        interference = interference.cpu().numpy()
+    :param signal: An ndarray containing the signal power levels for each user.
+    :param interference: An ndarray containing the interference power levels for each user.
+    :param max_power: The maximum total power that can be allocated across all users.
+    :param prelog_factor: A factor used in the spectral efficiency computation, representing bandwidth and noise.
+    :param return_spectral_efficiency: A flag indicating whether to return the spectral efficiency along with the
+                                       optimal power allocation. Defaults to False.
+    :return: A tuple where the first element is the spectral efficiency (if requested) or None, and the second element
+             is an ndarray of the optimal power allocation for each user.
+
+    The function uses a gradient-based method (L-BFGS-B) to find power allocations that maximize the product of users'
+    SINR, considering the given power constraints.
+    """
+    # if not isinstance(signal, np.ndarray):
+    #     signal = signal.cpu().numpy()
+    # if not isinstance(interference, np.ndarray):
+    #     interference = interference.cpu().numpy()
 
     K = signal.shape[0]
 
-    rhoSolution = np.full(K, max_power/K)
+    rhoSolution = np.full(K, max_power / K)
 
     bounds = [(1e-6, max_power)] * K
 
@@ -63,12 +101,31 @@ def power_opt_prod_sinr(signal, interference, max_power, prelog_factor, return_s
         return None, rhoBest
 
 
-def power_opt_sum_rate(signal, interference, max_power, prelog_factor, return_spectral_efficiency=False):
+def power_opt_sum_rate(signal: np.ndarray,
+                       interference: np.ndarray,
+                       max_power: float,
+                       prelog_factor: float,
+                       return_spectral_efficiency: bool = False
+                       ) -> Tuple[Optional[np.ndarray, None], np.ndarray]:
+    """
+    Optimizes power allocation to maximize the sum rate among users under a maximum power constraint.
 
-    if not isinstance(signal, np.ndarray):
-        signal = signal.cpu().numpy()
-    if not isinstance(interference, np.ndarray):
-        interference = interference.cpu().numpy()
+    :param signal: An ndarray containing the signal power levels for each user.
+    :param interference: An ndarray containing the interference power levels for each user.
+    :param max_power: The maximum total power that can be allocated across all users.
+    :param prelog_factor: A factor used in the spectral efficiency computation, representing bandwidth and noise.
+    :param return_spectral_efficiency: A flag indicating whether to return the spectral efficiency along with the
+                                       optimal power allocation. Defaults to False.
+    :return: A tuple where the first element is the spectral efficiency (if requested) or None, and the second element
+             is an ndarray of the optimal power allocation for each user.
+
+    The function employs a gradient-based optimization method (L-BFGS-B) to solve the power allocation problem,
+    targeting the maximization of the total spectral efficiency subject to individual power constraints for each user.
+    """
+    # if not isinstance(signal, np.ndarray):
+    #     signal = signal.cpu().numpy()
+    # if not isinstance(interference, np.ndarray):
+    #     interference = interference.cpu().numpy()
 
     K = signal.shape[0]
 
@@ -91,4 +148,3 @@ def power_opt_sum_rate(signal, interference, max_power, prelog_factor, return_sp
         return SE, rhoBest
     else:
         return None, rhoBest
-    
