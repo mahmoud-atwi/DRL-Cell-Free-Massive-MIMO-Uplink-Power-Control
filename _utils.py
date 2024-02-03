@@ -5,21 +5,22 @@ import subprocess
 import time
 import warnings
 from typing import Any, Dict, List, Type, Optional, Union, Tuple
-from matplotlib.lines import Line2D
 
 import cvxpy as cp
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
 import seaborn as sns
 import torch
+import torch.nn as nn
+from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.linalg import sqrtm
 from scipy.stats import stats
-from sklearn.metrics import auc
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from stable_baselines3.common.vec_env import VecEnv
 
 warnings.simplefilter('error', RuntimeWarning)
@@ -133,6 +134,98 @@ class TrialEvalCallback(EvalCallback):
         return True
 
 
+class OnlineLearningWrapper(gym.Wrapper):
+    def __init__(self, env):
+        super(OnlineLearningWrapper, self).__init__(env)
+        # Initialize lists to store individual data points
+        self.rewards = []
+        self.predicted_powers = []
+        self.ues_positions = []
+        self.sinrs = []
+        self.spectral_efficiencies = []
+
+    def step(self, action):
+        next_state, reward, done, truncated, info = self.env.step(action)
+
+        # Capture the data
+        self.rewards.append(reward)
+        self.predicted_powers.append(info['predicted_power'])
+        self.ues_positions.append(info['ues_positions'])
+        self.sinrs.append(info['sinr'])
+        self.spectral_efficiencies.append(info['spectral_efficiency'])
+
+        return next_state, reward, done, truncated, info
+
+    def get_dataframes(self):
+        # Convert lists to pandas DataFrames
+        Rewards_df = pd.DataFrame(self.rewards)
+        UEs_Power_df = pd.DataFrame(self.predicted_powers).transpose()
+        UEs_Position_df = pd.DataFrame(self.ues_positions).transpose()
+        UEs_SINR_df = pd.DataFrame(self.sinrs).transpose()
+        UEs_SE_df = pd.DataFrame(self.spectral_efficiencies).transpose()
+
+        return {
+            'Rewards': Rewards_df,
+            'UEs_Power': UEs_Power_df,
+            'UEs_Position': UEs_Position_df,
+            'UEs_SINR': UEs_SINR_df,
+            'UEs_SE': UEs_SE_df
+        }
+
+
+class OnlineLearningCallback(BaseCallback):
+    def __init__(self,):
+        super(OnlineLearningCallback, self).__init__()
+        self.rewards = []
+        self.predicted_powers = []
+        self.ues_positions = []
+        self.sinrs = []
+        self.spectral_efficiencies = []
+
+    def _on_step(self) -> bool:
+        # Retrieve the required data
+        reward = self.model.env.get_attr('rewards')[0][-1]
+        info = self.model.env.unwrapped.__getattribute__('buf_infos')[0]
+
+        self.rewards.append(reward)
+        self.predicted_powers.append(info['predicted_power'])
+        self.ues_positions.append(info['ues_positions'])
+        self.sinrs.append(info['sinr'])
+        self.spectral_efficiencies.append(info['spectral_efficiency'])
+
+        return True  # Returning False stops the training
+
+    def get_dataframes(self):
+        # Convert the collected data to a DataFrame
+        Rewards_df = pd.DataFrame(self.rewards)
+        UEs_Power_df = pd.DataFrame(self.predicted_powers).transpose()
+        UEs_Position_df = pd.DataFrame(self.ues_positions).transpose()
+        UEs_SINR_df = pd.DataFrame(self.sinrs).transpose()
+        UEs_SE_df = pd.DataFrame(self.spectral_efficiencies).transpose()
+
+        return {
+            'Rewards': Rewards_df,
+            'UEs_Power': UEs_Power_df,
+            'UEs_Position': UEs_Position_df,
+            'UEs_SINR': UEs_SINR_df,
+            'UEs_SE': UEs_SE_df
+        }
+
+
+class CustomFeatureExtractor(BaseFeaturesExtractor):
+    def __init__(self, observation_space, features_dim):
+        super(CustomFeatureExtractor, self).__init__(observation_space, features_dim)
+        # Use the observation space dimension as the input dimension
+        obs_dim = observation_space.shape[0]
+        self.extractor = nn.Sequential(
+            nn.Linear(obs_dim, features_dim),
+            nn.ReLU()
+        )
+
+    def forward(self, observations):
+        return self.extractor(observations)
+
+
 def get_machine_ip() -> str:
     """
     Retrieves the machine's public IP address.
@@ -235,51 +328,6 @@ def toeplitz_pytorch(c: torch.Tensor, r: Optional[torch.Tensor] = None) -> torch
     # Use flattened c and r to fill in the Toeplitz matrix
     flattened = torch.cat((r.flip(0)[1:], c))
     return flattened[idx_matrix]
-
-
-def get_sqrtm(matrix: torch.Tensor, method: str = 'newton_schulz', iters: int = 10) -> torch.Tensor:
-    """
-    Computes the matrix square root using the specified method.
-
-    :param matrix: A PyTorch tensor representing the matrix for which the square root is to be computed.
-    :param method: The method to use for computing the square root ('newton_schulz', 'cholesky', or other).
-                   Uses the Newton-Schulz iterative method by default, and Cholesky decomposition for positive
-                   definite matrices if specified. For non-positive definite matrices, SciPy's sqrtm is used.
-    :param iters: The number of iterations for the Newton-Schulz algorithm. Default is 10.
-    :return: A PyTorch tensor representing the square root of the input matrix.
-    """
-    if method == 'cholesky':
-        try:
-            return torch.linalg.cholesky(matrix)
-        except RuntimeError:
-            return sqrtm_newton_schulz(matrix, iters)
-    elif method == 'newton_schulz':
-        return sqrtm_newton_schulz(matrix, iters)
-    else:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        return torch.tensor(sqrtm(matrix.cpu().numpy()), dtype=torch.complex64).to(device)
-
-
-def sqrtm_newton_schulz(matrix: torch.Tensor, num_iters: int) -> torch.Tensor:
-    """
-    Computes the matrix square root using the Newton-Schulz iterative method.
-
-    :param matrix: A square PyTorch tensor representing the matrix for which the square root is to be computed.
-    :param num_iters: The number of iterations to perform in the Newton-Schulz algorithm.
-    :return: A PyTorch tensor representing the square root of the input matrix.
-    """
-    dim = matrix.size(0)
-    norm_of_matrix = matrix.norm(p='fro')
-    Y = matrix.div(norm_of_matrix)
-    I = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
-    Z = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
-
-    for _ in range(num_iters):
-        T = 0.5 * (3.0 * I - Z.mm(Y))
-        Y = Y.mm(T)
-        Z = T.mm(Z)
-
-    return Y * torch.sqrt(norm_of_matrix)
 
 
 def feasibility_problem_cvx(signal: np.ndarray, interference: np.ndarray, max_power: float, K: int,
@@ -438,68 +486,6 @@ def generate_ue_locations(num_ues: int, area_bounds: Tuple[float, float, float, 
     ue_locations.imag = np.random.uniform(y_min, y_max, num_ues)
 
     return ue_locations
-
-
-# def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
-#                  title: str, xlabel: Optional[str], operation: Optional[str], cumulative: bool) -> None:
-#     """
-#     Plot CDF or PDF for multiple models using matplotlib, with an optional operation applied across iterations.
-#     """
-#     operations = {
-#         'min': np.min,
-#         'max': np.max,
-#         'mean': np.mean,
-#         'sum': np.sum,
-#     }
-#
-#     if operation is not None and operation not in operations:
-#         raise ValueError(f"Invalid operation. Choose from {list(operations.keys())}")
-#
-#     plt.figure(figsize=(12, 6))
-#
-#     for key, info in data.items():
-#         value = info['data']
-#
-#         if isinstance(value, (pd.DataFrame, pd.Series)):
-#             value = value.to_numpy()
-#
-#         if operation is not None:
-#             value = operations[operation](value, axis=0)  # Apply operation across iterations
-#
-#         value = value.flatten()
-#
-#         if cumulative:
-#             sorted_data = np.sort(value)
-#             yvals = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-#             auc_value = auc(sorted_data, yvals)
-#             print(f"AUC for {info['label']}: {auc_value:.2f}")
-#             plt.plot(sorted_data, yvals,
-#                      label=info['label'],
-#                      color=info.get('color'),
-#                      linestyle=info.get('linestyle'),
-#                      marker=info.get('marker', None),
-#                      linewidth=info.get('linewidth'))
-#         else:
-#             if len(np.unique(value)) > 1:
-#                 bins = np.linspace(np.min(value), np.max(value), 30)
-#                 counts, bin_edges = np.histogram(value, bins=bins, density=True)
-#                 bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-#                 plt.plot(bin_centers, counts,
-#                          label=info['label'],
-#                          color=info.get('color'),
-#                          linestyle=info.get('linestyle'),
-#                          marker=info.get('marker', None),
-#                          linewidth=info.get('linewidth'))
-#             else:
-#                 print(f"Data for {key} lacks variability, skipping PDF plot.")
-#
-#     plt.xlabel('Spectral Efficiency (SE)' if xlabel is None else xlabel)
-#     plt.ylabel('Cumulative Distribution' if cumulative else 'Probability Density')
-#     plt.title(title)
-#     plt.legend(bbox_to_anchor=(1.3, 0.5), loc='center right')
-#     plt.grid(True)
-#     plt.tight_layout()
-#     plt.show()
 
 
 def plot_cdf_pdf(data: Dict[str, Dict[str, Union[str, np.ndarray, pd.DataFrame, pd.Series]]],
@@ -1112,7 +1098,7 @@ def plot_sinr_heatmap(title, sinr_df, location_df, ap_location_df, vmin=-30, vma
     plt.show()
 
 
-def duration_benchmarking(duration_data):
+def duration_benchmarking(duration_data: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
     """
     Benchmark models based on duration metrics.
 
@@ -1256,6 +1242,7 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
     fig, axes = plt.subplots(2, num_cols, figsize=(num_cols * 5, 10))  # Adjust the size as needed
     axes = axes.flatten()
 
+    i = -1
     for i, (title, sinr_df) in enumerate(dataframes.items()):
         ax = axes[i]
         _plot_sinr_heatmap(ax, title, sinr_df, location_df, ap_location_df, vmin, vmax, grid_size, rounding_precision,
@@ -1273,47 +1260,3 @@ def plot_sinr_heatmaps(dataframes: Dict[str, pd.DataFrame], location_df: pd.Data
 
     plt.tight_layout()
     plt.show()
-
-
-def compare_with_baseline(data_dict, operation, baseline_key):
-    if baseline_key not in data_dict:
-        raise ValueError("Baseline key not found in the dictionary.")
-
-    baseline_data = data_dict[baseline_key]['data']
-
-    # Define the operation function
-    operations = {
-        'min': np.min,
-        'max': np.max,
-        'mean': np.mean,
-        'sum': np.sum,
-    }
-
-    if operation is not None and operation not in operations:
-        raise ValueError(f"Invalid operation. Choose from {list(operations.keys())} or None.")
-
-    if operation is not None:
-        # Ensure the result is a DataFrame
-        baseline_result = pd.DataFrame(operations[operation](baseline_data, axis=0))
-    else:
-        baseline_result = baseline_data
-
-    # Prepare the result DataFrame
-    result_df = pd.DataFrame()
-
-    # Compare each data frame with the baseline and get the highest percentile
-    for key, item in data_dict.items():
-        if key == baseline_key:
-            continue
-
-        if operation is not None:
-            # Ensure the result is a DataFrame
-            data_result = pd.DataFrame(operations[operation](item['data'], axis=0))
-        else:
-            data_result = item['data']
-
-        comparison = data_result <= baseline_result
-        highest_percentile = comparison.mean(axis=0).max() * 100
-        result_df[key] = [highest_percentile]
-
-    return result_df
