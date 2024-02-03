@@ -209,7 +209,6 @@ class MultiModelBenchmark:
             'SIGNALS': np.zeros((self.env.K, self.num_of_iterations)),
             'CF_SEs': np.zeros((self.env.K, self.num_of_iterations)),
             'SINRs': np.zeros((self.env.K, self.num_of_iterations)),
-            # 'INTERFERENCEs': np.zeros((self.env.K, self.env.K, self.num_of_iterations))
         } for model_name in self.models}
 
         self.models_env = {model_name: copy.deepcopy(self.env) for model_name in self.models}
@@ -233,10 +232,6 @@ class MultiModelBenchmark:
         self.MAXMIN_SINRs = np.zeros((self.env.K, self.num_of_iterations))
         self.MAXPROD_SINRs = np.zeros((self.env.K, self.num_of_iterations))
         self.SUMRATE_SINRs = np.zeros((self.env.K, self.num_of_iterations))
-
-        # self.MAXMIN_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
-        # self.MAXPROD_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
-        # self.SUMRATE_INTERFERENCEs = np.zeros((self.env.K, self.env.K, self.num_of_iterations))
 
         self.MAXMIN_CF_SEs = np.zeros((self.env.K, self.num_of_iterations))
         self.MAXPROD_CF_SEs = np.zeros((self.env.K, self.num_of_iterations))
@@ -295,8 +290,8 @@ class MultiModelBenchmark:
 
             if self.include_maxmin:
                 maxmin_info = self.maxmin_env.maxmin_algo(self.maxmin_signal, self.maxmin_interference, self.max_power,
-                                                          self.ues_positions, self.prelog_factor, self.lagging_se, None,
-                                                          None)
+                                                          self.ues_positions, self.prelog_factor, self.lagging_se,
+                                                          None, None)
 
                 self.maxmin_signal = maxmin_info['signal']
                 self.maxmin_interference = maxmin_info['interference']
@@ -308,7 +303,6 @@ class MultiModelBenchmark:
                 self.MAXMIN_POWERs[:, i] = maxmin_info['optimized_power']
                 self.MAXMIN_SIGNALs[:, i] = maxmin_info['signal']
                 self.MAXMIN_SINRs[:, i] = maxmin_info['sinr']
-                # self.MAXMIN_INTERFERENCEs[:, :, i] = maxmin_info['interference']
 
             if self.include_maxprod:
                 maxprod_info = self.maxprod_env.maxprod_algo(self.maxprod_signal, self.maxprod_interference,
