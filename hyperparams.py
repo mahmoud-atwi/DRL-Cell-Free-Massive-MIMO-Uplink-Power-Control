@@ -1,13 +1,13 @@
 import optuna
 import numpy as np
-from typing import Any, Dict
+from typing import Tuple, Any, Dict
 
 from torch.optim.adam import Adam
 from torch.optim import SGD
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 
-def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
+def sample_sac_params(trial: optuna.Trial) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Sampler for SAC hyperparams.
 
@@ -54,12 +54,15 @@ def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
     #     "Adam": Adam,
     #     "SGD": SGD,
     # }[optimizer_class]
-
+    #
     OPTIMIZER = SGD
 
-    q_window = trial.suggest_categorical("q_window", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    # r_alpha = trial.suggest_float("r_alpha", 0.01, 10)
-    # r_beta = trial.suggest_float("r_beta", 0.01, 10)
+    # q_window = trial.suggest_categorical("q_window", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    q_window = 10
+    # r_alpha = trial.suggest_float("r_alpha", 1, 10)
+    # r_beta = trial.suggest_float("r_beta", 1, 10)
+    r_alpha = 1
+    r_beta = 1
 
     hyperparams = {
         "gamma": gamma,
@@ -77,14 +80,14 @@ def sample_sac_params(trial: optuna.Trial) -> Dict[str, Any]:
 
     extra_hyperparams = {
         "temporal_window_size": q_window,
-        # "r_alpha": r_alpha,
-        # "r_beta": r_beta,
+        "r_alpha": r_alpha,
+        "r_beta": r_beta,
     }
 
     return hyperparams, extra_hyperparams
 
 
-def sample_ddpg_params(trial: optuna.Trial, n_actions: int = 32) -> Dict[str, Any]:
+def sample_ddpg_params(trial: optuna.Trial, n_actions: int = 32) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Sampler for DDPG hyperparams.
 
