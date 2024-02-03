@@ -5,6 +5,7 @@ import warnings
 from torch.optim.adam import Adam
 from torch.optim import SGD
 
+from typing import Any, Dict, Optional, Tuple
 
 # MobilityCFmMIMOEnv-delta_cf_se-v0
 # MobilityCFmMIMOEnv-exp_delta_cf_se_clip-v0
@@ -21,7 +22,7 @@ from torch.optim import SGD
 # MobilityCFmMIMOEnv-log_relative_sinr-v0
 
 
-def select_reward_option():
+def select_reward_option() -> Tuple[str, Optional[str], Optional[str], Optional[str]]:
     # List of available reward options
     reward_options = {
         "1": "Channel Capacity",
@@ -38,10 +39,13 @@ def select_reward_option():
         "12": "Delta SINR",
         "13": "Exp Delta SINR Clip",
         "14": "Log Delta SINR",
-        "15": "Log Delta SINR (q_n=1)",
-        "16": "Relative SINR",
-        "17": "Exp Relative SINR Clip",
-        "18": "Log Relative SINR",
+        "15": "Log Delta SINR (int tuned weight)",
+        "16": "Log Delta SINR (float tuned weight)",
+        "17": "Log Delta SINR (re-tuned with int weight)",
+        "18": "Log Delta SINR (re-tuned with float weight)",
+        "19": "Relative SINR",
+        "20": "Exp Relative SINR Clip",
+        "21": "Log Relative SINR",
     }
 
     # Map of user selection to environment name
@@ -61,9 +65,12 @@ def select_reward_option():
         "13": ("MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0", None, "exp_delta_clip", "sinr"),
         "14": ("MobilityCFmMIMOEnv-log_delta_sinr-v0", None, "log_delta", "sinr"),
         "15": ("MobilityCFmMIMOEnv-log_delta_sinr-v1", None, "log_delta", "sinr"),
-        "16": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
-        "17": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
-        "18": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
+        "16": ("MobilityCFmMIMOEnv-log_delta_sinr-v2", None, "log_delta", "sinr"),
+        "17": ("MobilityCFmMIMOEnv-log_delta_sinr-v3", None, "log_delta", "sinr"),
+        "18": ("MobilityCFmMIMOEnv-log_delta_sinr-v4", None, "log_delta", "sinr"),
+        "19": ("MobilityCFmMIMOEnv-relative_sinr-v0", None, "relative", "sinr"),
+        "20": ("MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0", None, "exp_relative_clip", "sinr"),
+        "21": ("MobilityCFmMIMOEnv-log_relative_sinr-v0", None, "log_relative", "sinr"),
     }
 
     while True:
@@ -81,19 +88,31 @@ def select_reward_option():
 
 
 # Function to load hyperparameters from YAML
-def load_hyperparameters(yaml_file, env_reward):
-    _hyperparams = dict()
+def load_hyperparameters(yaml_file: str, env_reward: str) -> Dict[str, Any]:
+    """
+    Loads hyperparameters from a YAML file for a specified environment reward setting.
+
+    :param yaml_file: The path to the YAML file containing hyperparameters configurations.
+    :param env_reward: The key identifying the specific environment reward setting in the YAML file.
+    :return: A dictionary of hyperparameters associated with the specified environment reward setting.
+
+    The function uses `yaml.safe_load` to read the YAML file, ensuring safe loading without executing arbitrary code.
+    """
+    _hyperparams: Dict[str, Any] = dict()
     with open(yaml_file) as f:
         _hyperparams.update(yaml.safe_load(f).get(env_reward, {}))
     return _hyperparams
 
 
-def get_config():
+def get_config() -> Dict[str, Any]:
     # Initialize an empty config dictionary
-    config = dict()
+    config: Dict[str, Any] = dict()
 
     # Get user input for algorithm
-    config["algo"] = input("Enter the algorithm [currently only SAC and DDPG are supported](e.g., 'SAC'): ")
+    algo = input("Enter the algorithm [currently only SAC and DDPG are supported](e.g., 'SAC'): ")
+    if algo.upper() not in ['SAC', 'DDPG']:
+        raise ValueError("Invalid algorithm. Currently only SAC and DDPG are supported.")
+    config["algo"] = algo.upper()
     # config["algo"] = 'SAC'
     if config["algo"] not in ['SAC', 'DDPG']:
         raise ValueError("Invalid algorithm. Currently only SAC and DDPG are supported.")
@@ -114,7 +133,7 @@ def get_config():
     return config
 
 
-def get_hyperparameters(config):
+def get_hyperparameters(config: Dict[str, Any]) -> str:
     if config["optimizer_class"] is Adam and config["algo"] == 'SAC':
         yaml_file = os.path.join('hyperparameters', 'SAC_Adam.yaml')
     elif config["optimizer_class"] is SGD and config["algo"] == 'SAC':
