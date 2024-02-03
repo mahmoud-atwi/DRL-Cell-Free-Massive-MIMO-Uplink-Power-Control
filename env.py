@@ -45,22 +45,26 @@ class MobilityCFmMIMOEnv(gym.Env):
         relocate_UEs_on_reset (bool): If true, UEs are relocated when the environment is reset.
         area_bounds (Tuple[float, float, float, float]): Bounds of the simulation area (x_min, x_max, y_min, y_max).
         reward_method (str): Selected method for reward calculation.
-            - 'channel_capacity': Calculates reward based on channel capacity, using the sum of logarithmic Signal-to-Interference-plus-Noise Ratios (SINRs).
-            - 'min_se': Uses the minimum spectral efficiency among all users, emphasizing the worst-case performance.
-            - 'mean_se': Employs the average spectral efficiency across all users, providing a balance between fairness and efficiency.
-            - 'sum_se': Considers the sum of spectral efficiencies of all users, prioritizing total system throughput.
-            - 'geo_mean_se': Uses the geometric mean of spectral efficiencies, offering a compromise between fairness and total throughput.
-            - 'cf_min_se': Focuses on the minimum spectral efficiency among all users, with an emphasis on the worst-case scenario in a cell-free context.
-            - 'cf_mean_se': Averages the spectral efficiency across all users, balancing between fairness and efficiency in a cell-free setting.
-            - 'cf_sum_se': Summarizes the spectral efficiencies of all users, highlighting the overall throughput in a cell-free system.
-            - 'cf_geo_mean_se': Calculates the geometric mean of spectral efficiencies, balancing fairness and throughput in a cell-free context.
+            - 'channel_capacity': Calculates reward based on channel capacity, using the sum of logarithmic SINRs.
+            - 'min_se': Uses the minimum spectral efficiency among all users.
+            - 'mean_se': Employs the average spectral efficiency across all users.
+            - 'sum_se': Considers the sum of spectral efficiencies of all users.
+            - 'geo_mean_se': Uses the geometric mean of spectral efficiencies.
+            - 'cf_min_se': Focuses on the minimum spectral efficiency among all users.
+            - 'cf_mean_se': Averages the spectral efficiency across all users.
+            - 'cf_sum_se': Summarizes the spectral efficiencies of all users.
+            - 'cf_geo_mean_se': Calculates the geometric mean of spectral efficiencies.
         temporal_reward_method (str): Selected method for temporal reward calculation.
-            - 'delta': Calculates the reward based on the difference between the current and the historical data. temporal_data is used to define the historical data.
-            - 'relative': Calculates the reward based on the ratio between the current and the historical data. temporal_data is used to define the historical data.
-            - 'exp_delta_clip': Calculates the reward based on the exponential of the difference between the current and the historical data, with clipping. temporal_data is used to define the historical data.
-            - 'exp_relative_clip': Calculates the reward based on the exponential of the ratio between the current and the historical data, with clipping. temporal_data is used to define the historical data.
-            - 'log_delta': Calculates the reward based on the logarithm of the difference between the current and the historical data. temporal_data is used to define the historical data.
-            - 'log_relative': Calculates the reward based on the logarithm of the ratio between the current and the historical data. temporal_data is used to define the historical data.
+            - 'delta': Calculates the reward based on the difference between the current and the historical data.
+            - 'relative': Calculates the reward based on the ratio between the current and the historical data.
+            - 'exp_delta_clip': Calculates the reward based on the exponential of the difference between the current and
+                                the historical data, with clipping.
+            - 'exp_relative_clip': Calculates the reward based on the exponential of the ratio between the current and
+                                   the historical data, with clipping.
+            - 'log_delta': Calculates the reward based on the logarithm of the difference between the current and
+                           the historical data.
+            - 'log_relative': Calculates the reward based on the logarithm of the ratio between the current and
+                              the historical data.
         temporal_reward_operation (str): Operation used in temporal reward calculation (e.g., 'mean', 'sum').
         temporal_reward_max (float): Maximum value for temporal reward.
         temporal_data (str): Type of data used for temporal reward calculation.
@@ -192,8 +196,9 @@ class MobilityCFmMIMOEnv(gym.Env):
 
         _info = dict()
 
-        _info['init_signal'] = self.state
+        _info['init_signal'] = _init_signal
         _info['init_interference'] = _init_interference
+        _info['init_ues_positions'] = self.UEs_positions
         _info['init_pilot_index'] = _init_pilot_index
         _info['init_beta_val'] = _init_beta_val
 
@@ -233,6 +238,9 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info['interference'] = _updated_interference
         _info['predicted_power'] = _rescaled_action
         _info['ues_positions'] = self.UEs_positions
+        _info['sinr'] = calc_sinr(self.UEs_power, _updated_signal, _updated_interference)
+        _info['spectral_efficiency'] = compute_se(_updated_signal, _updated_interference, self.UEs_power,
+                                                  sim_para.prelog_factor)
 
         # Update the state
         self.state = _updated_Beta_K
@@ -578,6 +586,8 @@ class MobilityCFmMIMOEnv(gym.Env):
         _info['predicted_power'] = _rescaled_action
         _info['ues_positions'] = self.UEs_positions
         _info['cf_spectral_efficiency'] = _cf_spectral_efficiency
+        _info['spectral_efficiency'] = compute_se(_updated_signal, _updated_interference, self.UEs_power,
+                                                  sim_para.prelog_factor)
         _info['sinr'] = calc_sinr(self.UEs_power, _updated_signal, _updated_interference)
 
         # Update the state
