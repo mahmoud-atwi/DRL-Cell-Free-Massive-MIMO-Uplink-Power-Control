@@ -1,0 +1,101 @@
+# Temporal Reward: Mean Delta SINR
+MobilityCFmMIMOEnv-delta_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.0013864536616648487
+  buffer_size: 100000
+  batch_size: 16
+  gamma: 0.95
+  tau: 0.05
+  train_freq: 8
+  gradient_steps: 8
+  noise_type: 'None'
+  noise_std: 0.04298143071097851
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [128, 256, 128]
+  q_window: 10
+
+# Temporal Reward: Mean Exponential Delta SINR (Clipped)
+MobilityCFmMIMOEnv-exp_delta_sinr_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.00015469066515012508
+  buffer_size: 10000
+  batch_size: 16
+  gamma: 0.95
+  tau: 0.08
+  train_freq: 512
+  gradient_steps: 512
+  noise_type: 'normal'
+  noise_std: 0.02065099946572868
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
+  q_window: 10
+
+# Temporal Reward: Mean Logarithmic Delta SINR
+MobilityCFmMIMOEnv-log_delta_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.003143481191558231
+  buffer_size: 100000
+  batch_size: 2048
+  gamma: 0.999
+  tau: 0.001
+  train_freq: 32
+  gradient_steps: 32
+  noise_type: 'normal'
+  noise_std: 0.5882087514140838
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [64, 64]
+  q_window: 10
+
+# Temporal Reward: Mean Relative SINR
+MobilityCFmMIMOEnv-relative_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.0006661489231719253
+  buffer_size: 100100000000
+  batch_size: 512
+  gamma: 0.9
+  tau: 0.001
+  train_freq: 8
+  gradient_steps: 8
+  noise_type: 'normal'
+  noise_std: 0.046053304044045854
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [256, 256, 256]
+  q_window: 10
+
+# Temporal Reward: Mean Exponential Relative SINR (Clipped)
+MobilityCFmMIMOEnv-exp_relative_sinr_clip-v0:
+  policy: 'MlpPolicy'
+  learning_rate: 0.0034270003878400074
+  buffer_size: 100000
+  batch_size: 128
+  gamma: 0.9999
+  tau: 0.001
+  train_freq: 128
+  gradient_steps: 128
+  noise_type: 'ornstein-uhlenbeck'
+  noise_std: 0.47422269771772124
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [64, 64]
+  q_window: 10
+
+# Temporal Reward: Mean Logarithmic Relative SINR
+MobilityCFmMIMOEnv-log_relative_sinr-v0:
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1.075288951000435e-05
+  buffer_size: 10000
+  batch_size: 256
+  gamma: 0.995
+  tau: 0.08
+  train_freq: 16
+  gradient_steps: 16
+  noise_type: 'ornstein-uhlenbeck'
+  noise_std: 0.598697823554197
+  policy_kwargs:
+    optimizer_class: 'SGD'
+    net_arch: [64, 64]
+  q_window: 10
