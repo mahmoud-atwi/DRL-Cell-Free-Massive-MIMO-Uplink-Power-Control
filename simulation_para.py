@@ -21,7 +21,7 @@ antenna_spacing = 0.5  # Antenna spacing in wavelengths
 angular_sd_deg = 15  # Standard deviation of the angle of arrival/departure in degrees
 
 # Mobility Parameters
-speed_range = [0.5, 5]  # Range of user speeds
-max_pause_time = 5  # Maximum pause time for a user
+speed_range = [0.5, 5]  # Range of user speeds # [0.5, 5]
+max_pause_time = 5  # Maximum pause time for a user # 5
 time_step = 1  # Time step for the mobility model
-pause_prob = 0.3  # Probability of a user pausing at each time step
+pause_prob = 0.3  # Probability of a user pausing at each time step # 0.3
