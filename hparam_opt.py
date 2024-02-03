@@ -54,12 +54,6 @@ class HyperparameterOptimizer:
         n_eval_episodes (int): Number of episodes for evaluation.
         algo (str): Algorithm to be optimized.
         policy_type (str): Type of the policy (e.g., 'MlpPolicy').
-        reward_method (Optional[str]): Method of calculating the reward.
-        temporal_reward_method (Optional[str]): Method for temporal reward calculation.
-        temporal_reward_operation (str): Operation for temporal reward calculation.
-        temporal_reward_max (float): Maximum value for temporal reward.
-        temporal_data (str): Type of data used for temporal reward calculation.
-        temporal_window_size (int): Window size for temporal data calculation.
         seed (int): Random seed.
         study_name (str): Name of the Optuna study.
         storage_url (str): URL for the Optuna study storage.
@@ -96,14 +90,6 @@ class HyperparameterOptimizer:
         self.algo: str = kwargs.get('algo', 'SAC')
         print(self.algo)
         self.policy_type: str = 'MlpPolicy'  # currently only MlpPolicy is supported
-        # self.reward_method: Optional = kwargs.get('reward_method', None)
-        # self.temporal_reward_method: Optional = kwargs.get('temporal_reward_method', 'exp_relative_clip')
-        # print(self.temporal_reward_method)
-        # self.temporal_reward_operation: str = kwargs.get('temporal_reward_operation', 'mean')
-        # self.temporal_reward_max: float = kwargs.get('temporal_reward_max', 1.0)
-        # self.temporal_data: str = kwargs.get('temporal_data', 'cf_se')
-        # print(self.temporal_data)
-        # self.temporal_window_size: int = kwargs.get('temporal_window_size', 10)
         self.seed: int = kwargs.get('seed', 0)
 
         self.study_name: str = kwargs.get('study_name')
@@ -361,7 +347,7 @@ if __name__ == "__main__":
 
     env_id = "env/MobilityCFmMIMOEnv-v0"
     env_name = "MobilityCFmMIMOEnv"
-    algo = "DDPG"
+    algo = "SAC"
     temporal_reward_method = "log_delta"
     temporal_data = "sinr"  # cf_se | sinr
     temporal_reward_operation = "mean"
