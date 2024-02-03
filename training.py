@@ -1,11 +1,13 @@
 import os
 import sys
 import warnings
+import numpy as np
 from copy import copy
 from datetime import datetime
 from pathlib import Path
 
 from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 from torch import cuda
 from torch.backends import mps
 from torch.optim import SGD, Adam
@@ -77,30 +79,50 @@ class RLModelTrainer:
             temporal_reward_method=self.temporal_reward_method,
             temporal_data=self.temporal_data,
             temporal_window_size=self.hyperparams["q_window"],
+            r_alpha=self.hyperparams.get("r_alpha"),
+            r_beta=self.hyperparams.get("r_beta"),
         )
+
         check_env(self.env, warn=True)
 
     def train(self):
+        _hperparams = copy(self.hyperparams)
+        _hperparams.pop('q_window')
+        try:
+            _hperparams.pop('r_alpha')
+            _hperparams.pop('r_beta')
+        except KeyError:
+            pass
+        n_actions = self.env.action_space.shape[-1]
+        # check if noise_type and noise_std are in hyperparams
+        if 'noise_type' in _hperparams.keys() and 'noise_std' in _hperparams.keys():
+            noise_type = _hperparams.pop('noise_type')
+            print(noise_type)
+            noise_std = _hperparams.pop('noise_std')
+            print(noise_std)
+
+            if noise_type == "normal":
+                _hperparams['action_noise'] = NormalActionNoise(
+                    mean=np.zeros(n_actions), sigma=noise_std * np.ones(n_actions))
+            elif noise_type == "ornstein-uhlenbeck":
+                _hperparams['action_noise'] = OrnsteinUhlenbeckActionNoise(
+                    mean=np.zeros(n_actions), sigma=noise_std * np.ones(n_actions)
+                )
+            else:
+                _hperparams['action_noise'] = None
+
         model = ALGOS[self.config["algo"]](
-            policy=self.hyperparams["policy"],
             env=self.env,
-            learning_rate=self.hyperparams["learning_rate"],
-            buffer_size=self.hyperparams["buffer_size"],
-            learning_starts=self.hyperparams["learning_starts"],
-            batch_size=self.hyperparams["batch_size"],
-            tau=self.hyperparams["tau"],
-            gamma=self.hyperparams["gamma"],
-            train_freq=self.hyperparams["train_freq"],
-            gradient_steps=self.hyperparams["gradient_steps"],
-            ent_coef=self.hyperparams["ent_coef"],
-            policy_kwargs=self.hyperparams["policy_kwargs"],
             seed=self.seed,
             verbose=self.verbose,
             device=self.device,
+            # tensorboard_log="./tensorboard_logs/",
+            **_hperparams,
         )
         log_path = self._get_log_path()
-        model.learn(total_timesteps=self.config["total_timesteps"], log_interval=1000, tb_log_name=log_path,
+        model.learn(total_timesteps=self.config["total_timesteps"], log_interval=10, tb_log_name=log_path,
                     progress_bar=True)
+        print(model.policy)
         self._save_model(model)
 
     def _get_log_path(self):
