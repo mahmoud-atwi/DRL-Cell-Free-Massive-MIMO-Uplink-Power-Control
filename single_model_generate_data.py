@@ -87,7 +87,7 @@ for key, value in ch_cap_results.items():
     algo_name = "SAC"
     optim_name = "SGD"
     reward_method = "channel_capacity"
-    results_dir = 'results'
+    results_dir = 'RESULTS'
     results_folder = f'{algo_name}-{optim_name}-{reward_method}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{reward_method}-{key}.csv'
@@ -98,7 +98,7 @@ for key, value in geo_mean_results.items():
     algo_name = "SAC"
     optim_name = "SGD"
     reward_method = "geo_mean_se"
-    results_dir = 'results'
+    results_dir = 'RESULTS'
     results_folder = f'{algo_name}-{optim_name}-{reward_method}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{reward_method}-{key}.csv'
@@ -109,7 +109,7 @@ for key, value in mean_results.items():
     algo_name = "SAC"
     optim_name = "SGD"
     reward_method = "mean_se"
-    results_dir = 'results'
+    results_dir = 'RESULTS'
     results_folder = f'{algo_name}-{optim_name}-{reward_method}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{reward_method}-{key}.csv'
@@ -120,7 +120,7 @@ for key, value in min_results.items():
     algo_name = "SAC"
     optim_name = "SGD"
     reward_method = "min_se"
-    results_dir = 'results'
+    results_dir = 'RESULTS'
     results_folder = f'{algo_name}-{optim_name}-{reward_method}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{reward_method}-{key}.csv'
@@ -131,7 +131,7 @@ for key, value in sum_results.items():
     algo_name = "SAC"
     optim_name = "SGD"
     reward_method = "sum_se"
-    results_dir = 'results'
+    results_dir = 'RESULTS'
     results_folder = f'{algo_name}-{optim_name}-{reward_method}'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{reward_method}-{key}.csv'
