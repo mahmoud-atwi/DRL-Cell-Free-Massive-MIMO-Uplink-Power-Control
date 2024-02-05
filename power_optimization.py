@@ -106,7 +106,7 @@ def power_opt_sum_rate(signal: np.ndarray,
                        max_power: float,
                        prelog_factor: float,
                        return_spectral_efficiency: bool = False
-                       ) -> Tuple[Optional[np.ndarray, None], np.ndarray]:
+                       ) -> Tuple[Optional[np.ndarray], np.ndarray]:
     """
     Optimizes power allocation to maximize the sum rate among users under a maximum power constraint.
 
