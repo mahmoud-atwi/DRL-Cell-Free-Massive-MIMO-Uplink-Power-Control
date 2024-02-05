@@ -25,11 +25,11 @@ models_dict = {
     'SAC_RELATIVE_SINR': 'MODEL_SAC_SGD_RELATIVE_SINR_202401050237',
     'SAC_EXP_RELATIVE_CLIP_SINR': 'MODEL_SAC_SGD_EXP_RELATIVE_CLIP_SINR_202401050309',
     'SAC_LOG_RELATIVE_SINR': 'MODEL_SAC_SGD_LOG_RELATIVE_SINR_202401050300',
-    'DDPG_DELTA_SINR': 'MODEL_DDPG_SGD_DELTA_SINR_202401211437',
-    'DDPG_EXP_DELTA_SINR': 'MODEL_DDPG_SGD_EXP_DELTA_CLIP_SINR_202401211444',
-    'DDPG_LOG_DELTA_SINR': 'MODEL_DDPG_SGD_LOG_DELTA_SINR_202401211517',
-    'DDPG_RELATIVE_SINR': 'MODEL_DDPG_SGD_RELATIVE_SINR_202401211523',
-    'DDPG_LOG_RELATIVE_SINR': 'MODEL_DDPG_SGD_LOG_RELATIVE_SINR_202401211531',
+    # 'DDPG_DELTA_SINR': 'MODEL_DDPG_SGD_DELTA_SINR_202401211437',
+    # 'DDPG_EXP_DELTA_SINR': 'MODEL_DDPG_SGD_EXP_DELTA_CLIP_SINR_202401211444',
+    # 'DDPG_LOG_DELTA_SINR': 'MODEL_DDPG_SGD_LOG_DELTA_SINR_202401211517',
+    # 'DDPG_RELATIVE_SINR': 'MODEL_DDPG_SGD_RELATIVE_SINR_202401211523',
+    # 'DDPG_LOG_RELATIVE_SINR': 'MODEL_DDPG_SGD_LOG_RELATIVE_SINR_202401211531',
 }
 
 for key, value in models_dict.items():
@@ -45,7 +45,7 @@ for key, value in models_dict.items():
 env = MobilityCFmMIMOEnv(L=L, K=K, APs_positions=APs_positions, UEs_positions=UEs_positions,
                          square_length=square_length, UEs_mobility=True, eval=True)
 
-bm = MultiModelBenchmark(models=models_dict, env=env, num_of_iterations=1000, mobility=True, include_maxmin=True,
+bm = MultiModelBenchmark(models=models_dict, env=env, num_of_iterations=10000, mobility=True, include_maxmin=True,
                          include_maxprod=True, include_sumrate=True)
 
 results = bm.run(show_progress=True)
@@ -54,7 +54,7 @@ AP_LOCATION_SAVED = False
 
 for key, value in results.items():
     results_dir = 'RESULTS'
-    results_folder = 'MODELS_COMPARISON'
+    results_folder = 'SAC-SGD'
     os.makedirs(os.path.join(results_dir, results_folder), exist_ok=True)
     file_name = f'{key}.csv'
     file = os.path.join(results_dir, results_folder, file_name)
